@@ -1,4 +1,4 @@
-using Project.Application.Exceptions;
+using Project.Application.Common.Exceptions;
 using Project.Common.Constants;
 using System.Text.Encodings.Web;
 using System.Text.Json;

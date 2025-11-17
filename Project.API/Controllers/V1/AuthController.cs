@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Project.Application.DTOs;
-using Project.Application.Interfaces.IServices;
+using Project.Application.Features.Auth.Commands.Login;
+using Project.Application.Features.Auth.Commands.Logout;
+using Project.Application.Features.Auth.Commands.Refresh;
 using Project.Common.Models.Responses;
 using Project.Common.Options;
 
@@ -15,30 +17,23 @@ namespace Project.API.Controllers.V1
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
         private readonly AppSettings _appSettings;
-        public AuthController(IAuthService authService, IOptions<AppSettings> appSettings)
+        private readonly ISender _sender;
+        public AuthController(IOptions<AppSettings> appSettings, ISender sender)
         {
-            _authService = authService;
             _appSettings = appSettings.Value;
+            _sender = sender;
         }
 
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(
-            [FromBody] LoginDto loginDto,
+            [FromBody] LoginRequest loginRequest,
             CancellationToken cancellationToken = default)
         {
-            string deviceInfo = Request.Headers["User-Agent"].ToString();
-            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown IP";
+            var result = await _sender.Send(new LoginCommand(loginRequest), cancellationToken);
 
-            (string accessToken, string refreshToken) = await _authService.LoginAsync(
-                loginDto,
-                deviceInfo,
-                ipAddress,
-                cancellationToken);
-
-            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -50,15 +45,23 @@ namespace Project.API.Controllers.V1
             {
                 Success = true,
                 Message = "Login successful",
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
+                AccessToken = result.AccessToken
             });
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync(CancellationToken cancellationToken = default)
         {
-            await _authService.LogoutAsync(Request.Cookies["refreshToken"], cancellationToken);
+            if (string.IsNullOrEmpty(Request.Cookies["refreshToken"]))
+            {
+                return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Refresh token is required for logout"
+                });
+            }
+
+            await _sender.Send(new LogoutCommand(Request.Cookies["refreshToken"]), cancellationToken);
 
             Response.Cookies.Delete("refreshToken");
 
@@ -84,16 +87,9 @@ namespace Project.API.Controllers.V1
                 });
             }
 
-            string deviceInfo = Request.Headers["User-Agent"].ToString();
-            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown IP";
+            var result = await _sender.Send(new RefreshCommand(refreshToken), cancellationToken);
 
-            (string accessToken, string newRefreshToken) = await _authService.RefreshAsync(
-                refreshToken,
-                deviceInfo,
-                ipAddress,
-                cancellationToken);
-
-            Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -105,8 +101,7 @@ namespace Project.API.Controllers.V1
             {
                 Success = true,
                 Message = "Token refreshed successfully",
-                AccessToken = accessToken,
-                RefreshToken = newRefreshToken
+                AccessToken = result.AccessToken,
             });
         }
     }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using Project.Application.Interfaces.IServices;
+using Project.Application.Common.Interfaces.IServices;
 using Project.Domain.Entities.Base;
 using Project.Domain.Entities.Business;
 using Project.Domain.Entities.Identity_Auth;

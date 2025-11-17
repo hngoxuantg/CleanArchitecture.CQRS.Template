@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Project.Application.Interfaces.IExternalServices.ITokenServices;
+using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
 using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
 using System.IdentityModel.Tokens.Jwt;

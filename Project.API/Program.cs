@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Project.API.Extensions;
 using Project.API.Middlewares;
-using Project.Application.Interfaces.IDataSeedingServices;
-using Project.Application.Mappers;
-using Project.Application.Validators.AuthValidators;
+using Project.Application.Common.Interfaces.IDataSeedingServices;
+using Project.Application.Common.Mappers;
+using Project.Application.Features.Auth.Commands.Login;
 using Project.Infrastructure.Data.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,9 +41,13 @@ builder.Services.AddAuthorization();
 builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
 #endregion
 
+#region MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly));
+#endregion
+
 #region Validation
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssembly(typeof(LoginValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(LoginRequestValidator).Assembly);
 builder.Services.AddCustomFluentValidation();
 #endregion
 

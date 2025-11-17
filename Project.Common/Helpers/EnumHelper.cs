@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Project.API.Helpers
+namespace Project.Common.Helpers
 {
     public static class EnumHelper
     {

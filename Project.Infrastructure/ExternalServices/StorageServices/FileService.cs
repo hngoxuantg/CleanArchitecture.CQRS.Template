@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Project.Application.Exceptions;
-using Project.Application.Interfaces.IExternalServices;
+using Project.Application.Common.Exceptions;
+using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
 
 namespace Project.Infrastructure.ExternalServices.StorageServices
 {

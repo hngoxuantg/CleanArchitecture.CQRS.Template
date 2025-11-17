@@ -1,8 +1,7 @@
-﻿using Project.Application.Interfaces.IDataSeedingServices;
-using Project.Application.Interfaces.IExternalServices;
-using Project.Application.Interfaces.IExternalServices.ITokenServices;
-using Project.Application.Interfaces.IServices;
-using Project.Application.Services;
+﻿using Project.Application.Common.Interfaces.IDataSeedingServices;
+using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
+using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
+using Project.Application.Common.Interfaces.IServices;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using Project.Domain.Interfaces.IRepositories.IBusinessRepositories;
 using Project.Domain.Interfaces.IRepositories.IIdentity_AuthRepositories;
@@ -14,6 +13,7 @@ using Project.Infrastructure.Data.Repositories.Identity_AuthRepositories;
 using Project.Infrastructure.Data.Repositories.System_LogRepositories;
 using Project.Infrastructure.ExternalServices.StorageServices;
 using Project.Infrastructure.ExternalServices.TokenServices;
+using Project.Infrastructure.Services;
 
 namespace Project.API.Extensions
 {
@@ -30,7 +30,6 @@ namespace Project.API.Extensions
         {
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IFileService, FileService>();
-            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Project.Application.Interfaces.IDataSeedingServices;
+using Project.Application.Common.Interfaces.IDataSeedingServices;
 using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
