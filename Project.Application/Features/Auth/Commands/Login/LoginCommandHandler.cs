@@ -49,48 +49,77 @@ namespace Project.Application.Features.Auth.Commands.Login
             string? ipAddress,
             CancellationToken cancellationToken = default)
         {
-            await _unitOfWork.BeginTransactionAsync(cancellationToken);
-            try
+            User user = await GetUserAsync(request.UserName, cancellationToken);
+
+            await CheckLockoutAsync(user);
+
+            await CheckPasswordAsync(user, request.Password);
+
+            await CheckEmailConfirmedAsync(user);
+
+            AuthDto authDto = await CreateTokensAsync(user, deviceInfo, ipAddress, cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return authDto;
+        }
+
+        private async Task<User> GetUserAsync(string userName, CancellationToken cancellationToken)
+        {
+            if (_currentUserService.IsAuthenticated)
+                throw new ValidatorException("User is already authenticated");
+
+            User user = await _userManager.FindByNameAsync(userName)
+                ?? throw new NotFoundException($"User with UserName {userName} not found");
+
+            return user;
+        }
+
+        private async Task CheckLockoutAsync(User user)
+        {
+            if (await _userManager.IsLockedOutAsync(user))
+                throw new BusinessRuleException("User account is locked out!");
+        }
+
+        private async Task CheckPasswordAsync(User user, string password)
+        {
+            if (!await _userManager.CheckPasswordAsync(user, password))
             {
-                if (_currentUserService.IsAuthenticated)
-                    throw new ValidatorException("User is already authenticated");
-
-                User? user = await _unitOfWork.UserRepository.GetOneAsync<User>(
-                    filter: u => u.UserName == request.UserName,
-                    cancellation: cancellationToken)
-                    ?? throw new NotFoundException($"User with UserName {request.UserName} not found");
-
-                if (!await _userManager.CheckPasswordAsync(user, request.Password))
-                    throw new ValidatorException(nameof(LoginRequest.Password), $"Invalid password for user {request.UserName}");
-
-                if (!await _userManager.IsEmailConfirmedAsync(user))
-                    throw new BusinessRuleException("Email not verified!");
-
-                string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
-                string refreshToken = _jwtTokenService.GenerateRefreshToken();
-
-                RefreshToken newToken = new RefreshToken(
-                    user.Id, refreshToken,
-                    DateTime.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays),
-                    deviceInfo,
-                    ipAddress);
-
-                _unitOfWork.RefreshTokenRepository.AddEntity(newToken);
-
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-                return new AuthDto
-                {
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken
-                };
+                await _userManager.AccessFailedAsync(user);
+                throw new ValidatorException(nameof(LoginRequest.Password), $"Invalid password for user {user.UserName}");
             }
-            catch
+            else
             {
-                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                throw;
+                await _userManager.ResetAccessFailedCountAsync(user);
             }
         }
+        private async Task CheckEmailConfirmedAsync(User user)
+        {
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+                throw new BusinessRuleException("Email not verified!");
+        }
+        private async Task<AuthDto> CreateTokensAsync(
+            User user, string? deviceInfo, string? ipAddress, CancellationToken cancellationToken)
+        {
+            string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
+            string refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+            RefreshToken newToken = new RefreshToken(
+                user.Id,
+                refreshToken,
+                DateTime.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays),
+                deviceInfo,
+                ipAddress);
+
+            _unitOfWork.RefreshTokenRepository.AddEntity(newToken);
+
+            return new AuthDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+        }
+
     }
 }

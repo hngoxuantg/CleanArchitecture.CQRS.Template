@@ -50,6 +50,8 @@ namespace Project.Infrastructure.Data.DataSeedingServices
                     UserName = _adminAccount.Account.UserName,
                     Email = _adminAccount.Account.Email,
                     PhoneNumber = _adminAccount.Account.PhoneNumber,
+
+                    LockoutEnabled = true
                 };
                 IdentityResult result = await _userManager.CreateAsync(user, _adminAccount.Account.Password);
                 if (!result.Succeeded)
