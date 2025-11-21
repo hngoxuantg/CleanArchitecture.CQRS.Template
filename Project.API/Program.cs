@@ -1,21 +1,14 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.EntityFrameworkCore;
 using Project.API.Extensions;
 using Project.API.Middlewares;
-using Project.Application.Common.Interfaces.IDataSeedingServices;
 using Project.Application.Common.Mappers;
 using Project.Application.Features.Auth.Commands.Login;
-using Project.Infrastructure.Data.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Database
-builder.Services.AddDbContext<ApplicationDbContext>(option =>
-{
-    option.UseSqlServer(builder.Configuration.GetConnectionString("PrimaryDbConnection"));
-});
+builder.Services.AddCustomDb(builder.Configuration);
 #endregion
 
 #region Options
@@ -54,35 +47,13 @@ builder.Services.AddCustomFluentValidation();
 var app = builder.Build();
 
 #region Database Initialization
-using var scope = app.Services.CreateScope();
-
-var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-await db.Database.MigrateAsync();
-
-var seedingService = scope.ServiceProvider.GetRequiredService<IDataSeedingService>();
-await seedingService.SeedDataAsync();
+await app.UseDatabaseInitialization();
 #endregion
 
 #region Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.DefaultModelsExpandDepth(-1);
-        var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
-                                    $"API {description.GroupName.ToUpperInvariant()}");
-        }
-
-        options.EnableDeepLinking();
-        options.DisplayRequestDuration();
-        options.EnableFilter();
-        options.ShowExtensions();
-    });
+    app.UseCustomSwaggerUI();
 }
 
 app.UseHttpsRedirection();

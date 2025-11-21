@@ -77,5 +77,28 @@ namespace Project.API.Extensions
 
             return services;
         }
+
+        public static IApplicationBuilder UseCustomSwaggerUI(this IApplicationBuilder app)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.DefaultModelsExpandDepth(-1);
+                var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
+
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
+                                            $"API {description.GroupName.ToUpperInvariant()}");
+                }
+
+                options.EnableDeepLinking();
+                options.DisplayRequestDuration();
+                options.EnableFilter();
+                options.ShowExtensions();
+            });
+
+            return app;
+        }
     }
 }
