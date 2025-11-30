@@ -4,7 +4,7 @@ Clean architecture Web API template with advanced CQRS pattern, MediatR, Shared 
 
 ## Overview
 
-.NET 8 Web API enterprise template implementing clean architecture with CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, repository pattern, and production-grade patterns.
+.NET 10 Web API enterprise template implementing clean architecture with CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, repository pattern, and production-grade patterns.
 
 This template implements CQRS by **separating business logic into Shared Services**, keeping handlers thin and focused solely on orchestration.
 
@@ -232,7 +232,7 @@ public async Task<IActionResult> CreateCategoryAsync(
 
 ### Prerequisites
 
-- .NET 8.0 SDK or later
+- .NET 10.0 SDK or later
 - SQL Server (LocalDB, Express, or full instance)
 - Visual Studio 2022+ or VS Code
 
@@ -530,9 +530,9 @@ public class ProductsController : ControllerBase
 
 ## Technology Stack
 
-- **.NET 8.0** - Framework
-- **ASP.NET Core 8.0** - Web API
-- **Entity Framework Core 8.0** - ORM
+- **.NET 10.0** - Framework
+- **ASP.NET Core 10.0** - Web API
+- **Entity Framework Core 10.0** - ORM
 - **MediatR** - CQRS mediator
 - **FluentValidation** - Input validation
 - **AutoMapper** - Object mapping
@@ -586,7 +586,7 @@ Template Web API clean architecture với CQRS pattern nâng cao, MediatR, Share
 
 ## Tổng quan
 
-Template .NET 8 Web API enterprise triển khai clean architecture với CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, repository pattern, và các production-grade patterns.
+Template .NET 10 Web API enterprise triển khai clean architecture với CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, repository pattern, và các production-grade patterns.
 
 Template này implement CQRS bằng cách **tách business logic vào Shared Services**, giữ cho handlers mỏng và chỉ tập trung vào orchestration.
 
@@ -814,7 +814,7 @@ public async Task<IActionResult> CreateCategoryAsync(
 
 ### Yêu cầu
 
-- .NET 8.0 SDK trở lên
+- .NET 10.0 SDK trở lên
 - SQL Server (LocalDB, Express, hoặc full instance)
 - Visual Studio 2022+ hoặc VS Code
 
@@ -1112,9 +1112,9 @@ public class ProductsController : ControllerBase
 
 ## Technology Stack
 
-- **.NET 8.0** - Framework
-- **ASP.NET Core 8.0** - Web API
-- **Entity Framework Core 8.0** - ORM
+- **.NET 10.0** - Framework
+- **ASP.NET Core 10.0** - Web API
+- **Entity Framework Core 10.0** - ORM
 - **MediatR** - CQRS mediator
 - **FluentValidation** - Input validation
 - **AutoMapper** - Object mapping
