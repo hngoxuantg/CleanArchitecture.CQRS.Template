@@ -308,7 +308,7 @@ API available at:
 
 | Username | Password | Role |
 |----------|----------|------|
-| admin | Admin@123 | Admin |
+| admin | Admin123@ | Admin |
 
 ## Architecture Components
 
@@ -890,7 +890,7 @@ API có sẵn tại:
 
 | Username | Password | Role |
 |----------|----------|------|
-| admin | Admin@123 | Admin |
+| admin | Admin123@ | Admin |
 
 ## Các Components trong Kiến trúc
 
