@@ -11,7 +11,9 @@ namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
             Expression<Func<IQueryable<T>, IQueryable<T>>>? include = null,
             CancellationToken cancellation = default);
 
-        Task<T?> GetByIdAsync<Tid>(Tid id, CancellationToken cancellation = default);
+        Task<T?> GetByIdAsync<Tid>(
+            Tid id, 
+            CancellationToken cancellation = default);
 
         Task<T?> GetByIdAsync<Tid>(
             Tid id,
@@ -49,15 +51,21 @@ namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
             int pageSize = 12,
             CancellationToken cancellationToken = default);
 
-        Task<int> GetCountAsync(Expression<Func<T, bool>>? filters = null, CancellationToken cancellation = default);
+        Task<int> GetCountAsync(
+            Expression<Func<T, bool>>? filters = null,
+            CancellationToken cancellation = default);
 
         Task<T> CreateAsync(T model, CancellationToken cancellation = default);
 
-        Task<IEnumerable<T>> CreateRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default);
+        Task<IEnumerable<T>> CreateRangeAsync(
+            IEnumerable<T> models,
+            CancellationToken cancellation = default);
 
         Task<T> UpdateAsync(T model, CancellationToken cancellation = default);
 
-        Task<IEnumerable<T>> UpdateRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default);
+        Task<IEnumerable<T>> UpdateRangeAsync(
+            IEnumerable<T> models,
+            CancellationToken cancellation = default);
 
         Task DeleteAsync(T model, CancellationToken cancellation = default);
 
@@ -65,7 +73,10 @@ namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
 
         Task SaveChangeAsync(CancellationToken cancellation = default);
 
-        Task<bool> IsExistsAsync<TValue>(string key, TValue value, CancellationToken cancellation = default);
+        Task<bool> IsExistsAsync<TValue>(
+            string key,
+            TValue value,
+            CancellationToken cancellation = default);
 
         Task<bool> IsExistsForUpdateAsync<Tid, TValue>(
             Tid id,

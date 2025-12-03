@@ -13,7 +13,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<TResult>> GetAllAsync<TResult>(
+        public virtual async Task<IEnumerable<TResult>> GetAllAsync<TResult>(
             Expression<Func<T, bool>>? filter = null,
             Expression<Func<IQueryable<T>, IOrderedQueryable<T>>>? orderBy = null,
             Expression<Func<T, TResult>>? selector = null,
@@ -36,12 +36,14 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
                 return await query.Cast<TResult>().ToListAsync(cancellation);
         }
 
-        public async Task<T?> GetByIdAsync<Tid>(Tid id, CancellationToken cancellation = default)
+        public virtual async Task<T?> GetByIdAsync<Tid>(
+            Tid id,
+            CancellationToken cancellation = default)
         {
             return await _dbContext.Set<T>().FindAsync(id, cancellation);
         }
 
-        public async Task<T?> GetByIdAsync<Tid>(Tid id,
+        public virtual async Task<T?> GetByIdAsync<Tid>(Tid id,
             Expression<Func<IQueryable<T>, IQueryable<T>>>? include = null,
             CancellationToken cancellation = default)
         {
@@ -65,7 +67,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             return await include.Compile()(query).Where(lamda).FirstOrDefaultAsync(cancellation);
         }
 
-        public async Task<TResult?> GetOneUntrackedAsync<TResult>(
+        public virtual async Task<TResult?> GetOneUntrackedAsync<TResult>(
             Expression<Func<T, bool>>? filter = null,
             Expression<Func<IQueryable<T>, IOrderedQueryable<T>>>? orderBy = null,
             Expression<Func<T, TResult>>? selector = null,
@@ -88,7 +90,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
                 return await query.Cast<TResult>().FirstOrDefaultAsync(cancellation);
         }
 
-        public async Task<TResult?> GetOneAsync<TResult>(
+        public virtual async Task<TResult?> GetOneAsync<TResult>(
             Expression<Func<T, bool>>? filter = null,
             Expression<Func<IQueryable<T>, IOrderedQueryable<T>>>? orderBy = null,
             Expression<Func<T, TResult>>? selector = null,
@@ -165,7 +167,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             return (result, count);
         }
 
-        public async Task<int> GetCountAsync(
+        public virtual async Task<int> GetCountAsync(
             Expression<Func<T, bool>>? filters = null,
             CancellationToken cancellation = default)
         {
@@ -184,44 +186,51 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             return model;
         }
 
-        public virtual async Task<IEnumerable<T>> CreateRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default)
+        public virtual async Task<IEnumerable<T>> CreateRangeAsync(
+            IEnumerable<T> models,
+            CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().AddRange(models);
             await _dbContext.SaveChangesAsync(cancellation);
             return models;
         }
 
-        public async Task<T> UpdateAsync(T model, CancellationToken cancellation = default)
+        public virtual async Task<T> UpdateAsync(T model, CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().Update(model);
             await _dbContext.SaveChangesAsync(cancellation);
             return model;
         }
 
-        public async Task<IEnumerable<T>> UpdateRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default)
+        public virtual async Task<IEnumerable<T>> UpdateRangeAsync(
+            IEnumerable<T> models, 
+            CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().UpdateRange(models);
             await _dbContext.SaveChangesAsync(cancellation);
             return models;
         }
 
-        public async Task DeleteAsync(T model, CancellationToken cancellation = default)
+        public virtual async Task DeleteAsync(T model, CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().Remove(model);
             await _dbContext.SaveChangesAsync(cancellation);
         }
-        public async Task DeleteRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default)
+        public virtual async Task DeleteRangeAsync(IEnumerable<T> models, CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().RemoveRange(models);
             await _dbContext.SaveChangesAsync(cancellation);
         }
 
-        public async Task SaveChangeAsync(CancellationToken cancellation = default)
+        public virtual async Task SaveChangeAsync(CancellationToken cancellation = default)
         {
             await _dbContext.SaveChangesAsync(cancellation);
         }
 
-        public async Task<bool> IsExistsAsync<TValue>(string key, TValue value, CancellationToken cancellation = default)
+        public virtual async Task<bool> IsExistsAsync<TValue>(
+            string key,
+            TValue value,
+            CancellationToken cancellation = default)
         {
             var parameter = Expression.Parameter(typeof(T), "x");
             var property = Expression.Property(parameter, key);
@@ -232,7 +241,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             return await _dbContext.Set<T>().AnyAsync(lamda, cancellation);
         }
 
-        public async Task<bool> IsExistsForUpdateAsync<Tid, TValue>(
+        public virtual async Task<bool> IsExistsForUpdateAsync<Tid, TValue>(
             Tid id,
             string key,
             TValue value,
