@@ -20,6 +20,7 @@ builder.Services.AddCustomOptions(builder.Configuration);
 builder.Services.Register();
 builder.Services.RegisterSecurityService(builder.Configuration);
 builder.Services.AddCustomCors(builder.Configuration);
+builder.Services.AddCustomRateLimit(builder.Configuration);
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddCustomSwagger();
 #endregion
@@ -60,6 +61,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors(CorsExtension.GetPolicyName());
+
+app.UseRateLimiter();
 
 #region Custom Middlewares
 app.UseExceptionHandling();

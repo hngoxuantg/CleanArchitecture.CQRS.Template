@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
 using Project.Infrastructure.Data.Contexts;
 using System.Text;
@@ -36,14 +37,17 @@ namespace Project.API.Extensions
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(jwt =>
             {
-                byte[] key = Encoding.UTF8.GetBytes(configuration["AppSettings:JwtConfig:Secret"]);
+                JwtConfig? jwtConfig = configuration.GetSection("AppSettings:JwtConfig").Get<JwtConfig>();
+
+                byte[] key = Encoding.UTF8.GetBytes(jwtConfig?.Secret ?? "ngoadsfadfjaewrwrfsdf48sdffoxuanhai");
+
                 jwt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = configuration["AppSettings:JwtConfig:ValidIssuer"],
+                    ValidIssuer = jwtConfig?.ValidIssuer,
 
                     ValidateAudience = true,
-                    ValidAudience = configuration["AppSettings:JwtConfig:ValidAudience"],
+                    ValidAudience = jwtConfig?.ValidAudience,
 
                     ValidateLifetime = true,
                     RequireExpirationTime = true,

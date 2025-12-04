@@ -203,7 +203,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
         }
 
         public virtual async Task<IEnumerable<T>> UpdateRangeAsync(
-            IEnumerable<T> models, 
+            IEnumerable<T> models,
             CancellationToken cancellation = default)
         {
             _dbContext.Set<T>().UpdateRange(models);

@@ -12,7 +12,7 @@ namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
             CancellationToken cancellation = default);
 
         Task<T?> GetByIdAsync<Tid>(
-            Tid id, 
+            Tid id,
             CancellationToken cancellation = default);
 
         Task<T?> GetByIdAsync<Tid>(

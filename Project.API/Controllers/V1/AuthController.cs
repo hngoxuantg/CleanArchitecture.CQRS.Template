@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Project.Application.Features.Auth.Commands.Login;
 using Project.Application.Features.Auth.Commands.Logout;
 using Project.Application.Features.Auth.Commands.Refresh;
 using Project.Application.Features.Auth.Requests;
+using Project.Common.Constants;
 using Project.Common.Models.Responses;
 using Project.Common.Options;
 
@@ -26,6 +28,7 @@ namespace Project.API.Controllers.V1
             _sender = sender;
         }
 
+        [EnableRateLimiting(RateLimitPolicies.Login)]
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(
@@ -50,6 +53,7 @@ namespace Project.API.Controllers.V1
             });
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync(CancellationToken cancellationToken = default)
         {
@@ -73,6 +77,7 @@ namespace Project.API.Controllers.V1
             });
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerIp)]
         [AllowAnonymous]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshAsync(CancellationToken cancellationToken = default)

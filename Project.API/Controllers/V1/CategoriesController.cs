@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Features.Categories.Commands;
 using Project.Application.Features.Categories.Queries.GetById;
 using Project.Application.Features.Categories.Request;
+using Project.Common.Constants;
 using Project.Common.Models.Responses;
 
 namespace Project.API.Controllers.V1
@@ -26,6 +28,7 @@ namespace Project.API.Controllers.V1
             _cache = cache;
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateCategoryAsync(
@@ -42,6 +45,7 @@ namespace Project.API.Controllers.V1
             });
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCategoryByIdAsync([FromRoute] int id)
         {
@@ -67,6 +71,7 @@ namespace Project.API.Controllers.V1
             });
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateCategoryAsync(
@@ -86,6 +91,7 @@ namespace Project.API.Controllers.V1
             });
         }
 
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteCategoryAsync(
