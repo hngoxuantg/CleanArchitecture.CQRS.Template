@@ -23,6 +23,7 @@ This template implements CQRS by **separating business logic into Shared Service
 - **ASP.NET Core Identity** - User management and authentication
 - **AutoMapper** - Object-to-object mapping
 - **Structured Logging** - Request/Response logging middleware
+- **Rate Limiting** - Per-user, per-IP, and login attempt rate limiting policies
 
 ## Project Structure
 
@@ -376,24 +377,53 @@ DELETE /api/v1/categories/{id}     - Delete category [Admin only]
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;"
+    "PrimaryDbConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;"
   },
   "AppSettings": {
     "JwtConfig": {
       "Secret": "your-super-secret-key-at-least-32-characters-long-for-security",
-      "ValidIssuer": "YourApplicationName",
-      "ValidAudience": "YourApplicationUsers",
-      "AccessTokenExpirationMinutes": 15,
+      "ValidIssuer": "https://localhost:7191",
+      "ValidAudience": "http://localhost:5174",
+      "TokenExpirationMinutes": 15,
       "RefreshTokenExpirationDays": 7
     },
-    "AllowedHosts": "*"
+    "RateLimit": {
+      "AuthenticatedUser": {
+        "PermitLimit": 200,
+        "WindowMinutes": 1
+      },
+      "AnonymousUser": {
+        "PermitLimit": 50,
+        "WindowMinutes": 1
+      },
+      "LoginAttempts": {
+        "PermitLimit": 5,
+        "WindowMinutes": 15
+      }
+    }
+  },
+  "AdminAccount": {
+    "Account": {
+      "UserName": "admin",
+      "Password": "Admin123@",
+      "FullName": "Your Full Name",
+      "Email": "admin@example.com",
+      "PhoneNumber": "0987654321"
+    }
+  },
+  "AllowedCors": {
+    "Origins": [
+      "http://localhost:5174",
+      "https://localhost:5174"
+    ]
   },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
-  }
+  },
+  "AllowedHosts": "*"
 }
 ```
 
@@ -570,7 +600,6 @@ public class ProductsController : ControllerBase
 - [ ] Implement Pagination for GetAll queries
 - [ ] Add Redis caching layer
 - [ ] Implement Background Jobs (Hangfire)
-- [ ] Add API Rate Limiting
 - [ ] Implement Email service
 - [ ] Add Health Checks
 - [ ] Docker support
