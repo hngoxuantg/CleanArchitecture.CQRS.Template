@@ -530,16 +530,36 @@ public class ProductsController : ControllerBase
 
 ## Technology Stack
 
-- **.NET 10.0** - Framework
-- **ASP.NET Core 10.0** - Web API
-- **Entity Framework Core 10.0** - ORM
-- **MediatR** - CQRS mediator
-- **FluentValidation** - Input validation
-- **AutoMapper** - Object mapping
-- **ASP.NET Core Identity** - Authentication
-- **JWT Bearer** - Token authentication
-- **Swagger/OpenAPI** - API documentation
-- **SQL Server** - Database
+### Core Framework
+- **.NET 10.0** - Target framework
+- **ASP.NET Core** - Web API framework
+
+### Data Access
+- **Entity Framework Core 9.0.7** - ORM
+- **Microsoft.EntityFrameworkCore.SqlServer 9.0.7** - SQL Server provider
+- **Microsoft.EntityFrameworkCore.Design 9.0.8** - EF Core design-time tools
+
+### CQRS & Messaging
+- **MediatR 13.1.0** - CQRS mediator pattern implementation
+- **MediatR.Extensions.Microsoft.DependencyInjection 11.1.0** - DI integration
+
+### Validation & Mapping
+- **FluentValidation 12.0.0** - Fluent validation rules
+- **FluentValidation.AspNetCore 11.3.1** - ASP.NET Core integration
+- **AutoMapper 14.0.0** - Object-to-object mapping
+
+### Authentication & Security
+- **ASP.NET Core Identity 8.0.18** - User management
+- **Microsoft.AspNetCore.Authentication.JwtBearer 8.0.18** - JWT authentication
+- **System.IdentityModel.Tokens.Jwt 8.13.1** - JWT token handling
+
+### API Features
+- **Swashbuckle.AspNetCore 6.6.2** - Swagger/OpenAPI documentation
+- **Microsoft.AspNetCore.Mvc.Versioning 5.1.0** - API versioning
+- **Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer 5.1.0** - API version explorer
+
+### Database
+- **SQL Server** - Production database
 
 
 
