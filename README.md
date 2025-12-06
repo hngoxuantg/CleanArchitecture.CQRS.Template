@@ -45,11 +45,9 @@ Project.Application/                  # CQRS Commands/Queries, Business logic
   │   │   ├── Validators/             # FluentValidation validators
   │   │   └── Shared/                 # Shared services
   │   │       ├── Interfaces/
-  │   │       │   ├── IAuthWriteService.cs      # Write operations
-  │   │       │   └── IAuthValidationService.cs # Validation logic
+  │   │       │   └── IAuthWriteService.cs      # Write operations
   │   │       └── Services/
-  │   │           ├── AuthWriteService.cs       # Login, Logout, Refresh logic
-  │   │           └── AuthValidationService.cs  # Validation helpers
+  │   │           └── AuthWriteService.cs       # Login, Logout, Refresh logic
   │   │
   │   └── Categories/                 # Category CRUD feature
   │       ├── Commands/               # Write operations
@@ -60,15 +58,13 @@ Project.Application/                  # CQRS Commands/Queries, Business logic
   │       │   └── GetById/
   │       ├── Request/                # Request/Response DTOs
   │       ├── Validators/             # Validation rules
-  │       └── Shared/                 # Business services & validation
+  │       └── Shared/                 # Business services
   │           ├── Interfaces/
   │           │   ├── ICategoryWriteService.cs      # Write operations (Create, Update, Delete)
-  │           │   ├── ICategoryReadService.cs       # Read operations (Get)
-  │           │   └── ICategoryValidationService.cs # Validation logic
+  │           │   └── ICategoryReadService.cs       # Read operations (Get)
   │           └── Services/
   │               ├── CategoryWriteService.cs       # Business logic for writes
-  │               ├── CategoryReadService.cs        # Business logic for reads
-  │               └── CategoryValidationService.cs  # Shared validation helpers
+  │               └── CategoryReadService.cs        # Business logic for reads
   │
   └── Common/                         # Shared application code
       ├── DTOs/                       # Data Transfer Objects
@@ -112,7 +108,6 @@ Query Handler   → Read Service  → Repository
 **Key Principles:**
 - **Commands** use `ICategoryWriteService` for create/update/delete operations
 - **Queries** use `ICategoryReadService` for read-only operations
-- **Validation** logic extracted to `ICategoryValidationService` (reused across services)
 - Handlers are **thin** (5-10 lines) - orchestration only
 - Services are **fat** - contain all business logic
 
