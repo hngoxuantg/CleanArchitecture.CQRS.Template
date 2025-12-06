@@ -36,12 +36,10 @@ namespace Project.API.Extensions
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthWriteService, AuthWriteService>();
 
-            services.AddScoped<ICategoryCreationService, CategoryCreationService>();
-            services.AddScoped<ICategoryUpdateService, CategoryUpdateService>();
-            services.AddScoped<ICategoryDeletionService, CategoryDeletionService>();
-            services.AddScoped<ICategoryQueryService, CategoryQueryService>();
+            services.AddScoped<ICategoryReadService, CategoryReadService>();
+            services.AddScoped<ICategoryWriteService, CategoryWriteService>();
 
             return services;
         }

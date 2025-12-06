@@ -12,7 +12,7 @@ using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 
 namespace Project.Application.Features.Auth.Shared.Services
 {
-    public class AuthService : IAuthService
+    public class AuthWriteService : IAuthWriteService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
@@ -20,7 +20,7 @@ namespace Project.Application.Features.Auth.Shared.Services
         private readonly IJwtTokenService _jwtTokenService;
         private readonly AppSettings _appSettings;
 
-        public AuthService(
+        public AuthWriteService(
             IUnitOfWork unitOfWork,
             UserManager<User> userManager,
             ICurrentUserService currentUserService,

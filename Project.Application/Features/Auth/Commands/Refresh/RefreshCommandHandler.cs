@@ -7,17 +7,18 @@ namespace Project.Application.Features.Auth.Commands.Refresh
 {
     public class RefreshCommandHandler : IRequestHandler<RefreshCommand, AuthDto>
     {
-        private readonly IAuthService _authService;
+        private readonly IAuthWriteService _authWriteService;
         private readonly ICurrentUserService _currentUserService;
-        public RefreshCommandHandler(ICurrentUserService currentUserService, IAuthService authService)
+
+        public RefreshCommandHandler(ICurrentUserService currentUserService, IAuthWriteService authWriteService)
         {
-            _authService = authService;
+            _authWriteService = authWriteService;
             _currentUserService = currentUserService;
         }
 
         public async Task<AuthDto> Handle(RefreshCommand request, CancellationToken cancellationToken)
         {
-            return await _authService.RefreshAsync(
+            return await _authWriteService.RefreshAsync(
                 request.RefreshToken,
                 _currentUserService.DeviceInfo,
                 _currentUserService.IpAddress,

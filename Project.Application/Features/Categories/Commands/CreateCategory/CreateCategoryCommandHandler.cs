@@ -6,15 +6,16 @@ namespace Project.Application.Features.Categories.Commands
 {
     public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryDto>
     {
-        private readonly ICategoryCreationService _categoryCreationService;
-        public CreateCategoryCommandHandler(ICategoryCreationService categoryCreationService)
+        private readonly ICategoryWriteService _categoryWriteService;
+
+        public CreateCategoryCommandHandler(ICategoryWriteService categoryWriteService)
         {
-            _categoryCreationService = categoryCreationService;
+            _categoryWriteService = categoryWriteService;
         }
 
         public async Task<CategoryDto> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
-            return await _categoryCreationService.CreateCategoryAsync(request.Request, cancellationToken);
+            return await _categoryWriteService.CreateCategoryAsync(request.Request, cancellationToken);
         }
     }
 }

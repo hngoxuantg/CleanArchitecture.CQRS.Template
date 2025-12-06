@@ -8,18 +8,19 @@ namespace Project.Application.Features.Auth.Commands.Login
     public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthDto>
     {
         private readonly ICurrentUserService _currentUserService;
-        private readonly IAuthService _authService;
-        public LoginCommandHandler(ICurrentUserService currentUserService, IAuthService authService)
+        private readonly IAuthWriteService _authWriteService;
+
+        public LoginCommandHandler(ICurrentUserService currentUserService, IAuthWriteService authWriteService)
         {
             _currentUserService = currentUserService;
-            _authService = authService;
+            _authWriteService = authWriteService;
         }
 
         public async Task<AuthDto> Handle(
             LoginCommand request,
             CancellationToken cancellationToken)
         {
-            return await _authService.LoginAsync(
+            return await _authWriteService.LoginAsync(
                 request.Request,
                 _currentUserService.DeviceInfo,
                 _currentUserService.IpAddress,

@@ -5,16 +5,16 @@ namespace Project.Application.Features.Categories.Commands
 {
     public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, bool>
     {
-        private readonly ICategoryDeletionService _categoryDeletionService;
+        private readonly ICategoryWriteService _categoryWriteService;
 
-        public DeleteCategoryCommandHandler(ICategoryDeletionService categoryDeletionService)
+        public DeleteCategoryCommandHandler(ICategoryWriteService categoryWriteService)
         {
-            _categoryDeletionService = categoryDeletionService;
+            _categoryWriteService = categoryWriteService;
         }
 
         public async Task<bool> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
         {
-            return await _categoryDeletionService.DeleteCategoryAsync(request.Id, cancellationToken);
+            return await _categoryWriteService.DeleteCategoryAsync(request.Id, cancellationToken);
         }
     }
 }

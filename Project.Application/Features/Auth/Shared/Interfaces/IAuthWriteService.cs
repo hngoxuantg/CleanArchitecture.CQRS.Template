@@ -3,7 +3,7 @@ using Project.Application.Features.Auth.Requests;
 
 namespace Project.Application.Features.Auth.Shared.Interfaces
 {
-    public interface IAuthService
+    public interface IAuthWriteService
     {
         Task<AuthDto> LoginAsync(
             LoginRequest request,

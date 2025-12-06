@@ -5,15 +5,15 @@ namespace Project.Application.Features.Auth.Commands.Logout
 {
     public class LogoutCommandHandler : IRequestHandler<LogoutCommand, bool>
     {
-        private readonly IAuthService _authService;
-        public LogoutCommandHandler(IAuthService authService)
+        private readonly IAuthWriteService _authWriteService;
+        public LogoutCommandHandler(IAuthWriteService authWriteService)
         {
-            _authService = authService;
+            _authWriteService = authWriteService;
         }
 
         public async Task<bool> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
-            return await _authService.LogoutAsync(request.RefreshToken, cancellationToken);
+            return await _authWriteService.LogoutAsync(request.RefreshToken, cancellationToken);
         }
     }
 }

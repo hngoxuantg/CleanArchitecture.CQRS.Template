@@ -6,15 +6,16 @@ namespace Project.Application.Features.Categories.Queries.GetById
 {
     public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
     {
-        private readonly ICategoryQueryService _categoryQueryService;
-        public GetCategoryByIdQueryHandler(ICategoryQueryService categoryQueryService)
+        private readonly ICategoryReadService _categoryReadService;
+
+        public GetCategoryByIdQueryHandler(ICategoryReadService categoryReadService)
         {
-            _categoryQueryService = categoryQueryService;
+            _categoryReadService = categoryReadService;
         }
 
         public async Task<CategoryDto> Handle(GetCategoryByIdQuery query, CancellationToken cancellationToken)
         {
-            return await _categoryQueryService.GetByIdAsync(query.Id, cancellationToken);
+            return await _categoryReadService.GetByIdAsync(query.Id, cancellationToken);
         }
     }
 }

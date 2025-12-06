@@ -2,7 +2,7 @@
 
 namespace Project.Application.Features.Categories.Shared.Interfaces
 {
-    public interface ICategoryQueryService
+    public interface ICategoryReadService
     {
         Task<CategoryDto> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     }

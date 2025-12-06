@@ -1,17 +1,22 @@
-﻿using Project.Application.Common.DTOs.Categories;
+﻿using AutoMapper;
+using Project.Application.Common.DTOs.Categories;
 using Project.Application.Common.Exceptions;
 using Project.Application.Features.Categories.Shared.Interfaces;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 
 namespace Project.Application.Features.Categories.Shared.Services
 {
-    public class CategoryQueryService : ICategoryQueryService
+    public class CategoryReadService : ICategoryReadService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public CategoryQueryService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+
+        public CategoryReadService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
+
         public async Task<CategoryDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _unitOfWork.CategoryRepository.GetOneUntrackedAsync(
