@@ -37,17 +37,19 @@ Project.API/                          # Controllers, middleware, configuration
 Project.Application/                  # CQRS Commands/Queries, Business logic
   ├── Features/                       # Feature-based organization
   │   ├── Auth/                       # Authentication feature
-  │   │   ├── Commands/               # Login, Logout, Refresh, Register
-  │   │   │   └── Login/              # Each command in own folder
-  │   │   │       ├── LoginCommand.cs
-  │   │   │       └── LoginCommandHandler.cs
+  │   │   ├── Commands/               # Write operations (Login, Logout, Refresh)
+  │   │   │   ├── Login/
+  │   │   │   ├── Logout/
+  │   │   │   └── Refresh/
   │   │   ├── Requests/               # Request DTOs
   │   │   ├── Validators/             # FluentValidation validators
-  │   │   └── Shared/                 # Shared business services
-  │   │       ├── Interfaces/         # Service interfaces
-  │   │       │   └── IAuthService.cs
-  │   │       └── Services/           # Business logic services
-  │   │           └── AuthService.cs
+  │   │   └── Shared/                 # Shared services
+  │   │       ├── Interfaces/
+  │   │       │   ├── IAuthWriteService.cs      # Write operations
+  │   │       │   └── IAuthValidationService.cs # Validation logic
+  │   │       └── Services/
+  │   │           ├── AuthWriteService.cs       # Login, Logout, Refresh logic
+  │   │           └── AuthValidationService.cs  # Validation helpers
   │   │
   │   └── Categories/                 # Category CRUD feature
   │       ├── Commands/               # Write operations
@@ -58,17 +60,15 @@ Project.Application/                  # CQRS Commands/Queries, Business logic
   │       │   └── GetById/
   │       ├── Request/                # Request/Response DTOs
   │       ├── Validators/             # Validation rules
-  │       └── Shared/                 # Business services
+  │       └── Shared/                 # Business services & validation
   │           ├── Interfaces/
-  │           │   ├── ICategoryCreationService.cs
-  │           │   ├── ICategoryUpdateService.cs
-  │           │   ├── ICategoryDeletionService.cs
-  │           │   └── ICategoryQueryService.cs
+  │           │   ├── ICategoryWriteService.cs      # Write operations (Create, Update, Delete)
+  │           │   ├── ICategoryReadService.cs       # Read operations (Get)
+  │           │   └── ICategoryValidationService.cs # Validation logic
   │           └── Services/
-  │               ├── CategoryCreationService.cs
-  │               ├── CategoryUpdateService.cs
-  │               ├── CategoryDeletionService.cs
-  │               └── CategoryQueryService.cs
+  │               ├── CategoryWriteService.cs       # Business logic for writes
+  │               ├── CategoryReadService.cs        # Business logic for reads
+  │               └── CategoryValidationService.cs  # Shared validation helpers
   │
   └── Common/                         # Shared application code
       ├── DTOs/                       # Data Transfer Objects
@@ -99,28 +99,34 @@ Project.Common/                       # Cross-cutting concerns
 Project.UnitTest/                     # Unit tests (TODO)
 ```
 
-## CQRS Pattern with Shared Services
+## CQRS Pattern with Write/Read Services
 
-This template implements CQRS architecture with a clear separation of concerns:
+This template implements CQRS with **service layer split between Write and Read operations**:
 
 ### Architecture Flow
 ```
-Controller → Command → CommandHandler → Shared Service → Repository
-                ↓                              ↓
-            Orchestration              Business Logic
+Command Handler → Write Service → Repository
+Query Handler   → Read Service  → Repository
 ```
 
+**Key Principles:**
+- **Commands** use `ICategoryWriteService` for create/update/delete operations
+- **Queries** use `ICategoryReadService` for read-only operations
+- **Validation** logic extracted to `ICategoryValidationService` (reused across services)
+- Handlers are **thin** (5-10 lines) - orchestration only
+- Services are **fat** - contain all business logic
+
 ✅ **Benefits:**
-- Handlers are thin (5-10 lines) - only orchestration
-- Business logic in dedicated services - reusable
-- Easy to test - mock services in handlers
-- Easy to maintain - one service per responsibility
-- Can reuse services across multiple handlers
-- Follows SOLID principles strictly
+- Clear separation: Write vs Read operations
+- Thin handlers - only delegate to services
+- Services can be optimized independently (WriteService with transactions, ReadService with caching)
+- Easy to test - mock specific Write or Read service
+- Validation logic reusable - no duplication
+- Follows SOLID principles and CQRS pattern strictly
 
-### Example: Create Category Flow
+### Example: Create Category Flow (Write Operation)
 
-**1. Request DTO** - Input from client
+**1. Request DTO** - Input validation
 ```csharp
 // Features/Categories/Request/CreateCategoryRequest.cs
 public class CreateCategoryRequest
@@ -130,7 +136,7 @@ public class CreateCategoryRequest
 }
 ```
 
-**2. Validator** - Validation rules
+**2. Validator** - Request-level validation rules
 ```csharp
 // Features/Categories/Validators/CreateCategoryRequestValidator.cs
 public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
@@ -144,59 +150,191 @@ public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRe
 }
 ```
 
-**3. Command** - Wraps request
+**3. Command** - Wraps request for MediatR
 ```csharp
 // Features/Categories/Commands/CreateCategory/CreateCategoryCommand.cs
 public record CreateCategoryCommand(CreateCategoryRequest Request) 
     : IRequest<CategoryDto>;
 ```
 
-**4. Handler** - Thin orchestration layer
+**4. Handler** - Thin orchestration (3 lines)
 ```csharp
 // Features/Categories/Commands/CreateCategory/CreateCategoryCommandHandler.cs
 public class CreateCategoryCommandHandler 
     : IRequestHandler<CreateCategoryCommand, CategoryDto>
 {
-    private readonly ICategoryCreationService _categoryCreationService;
+    private readonly ICategoryWriteService _categoryWriteService;
     
-    public CreateCategoryCommandHandler(ICategoryCreationService service)
+    public CreateCategoryCommandHandler(ICategoryWriteService categoryWriteService)
     {
-        _categoryCreationService = service;
+        _categoryWriteService = categoryWriteService;
     }
 
     public async Task<CategoryDto> Handle(
         CreateCategoryCommand request, 
         CancellationToken cancellationToken)
     {
-        // Handler only orchestrates - delegates to service
-        return await _categoryCreationService.CreateCategoryAsync(
+        // Handler only delegates - no business logic
+        return await _categoryWriteService.CreateCategoryAsync(
             request.Request, 
             cancellationToken);
     }
 }
 ```
 
-**5. Shared Service** - Business logic
+**5. Write Service** - Contains all business logic (Create, Update, Delete)
 ```csharp
-// Features/Categories/Shared/Services/CategoryCreationService.cs
-public class CategoryCreationService : ICategoryCreationService
+// Features/Categories/Shared/Services/CategoryWriteService.cs
+public class CategoryWriteService : ICategoryWriteService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
+    public CategoryWriteService(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    // CREATE operation
     public async Task<CategoryDto> CreateCategoryAsync(
         CreateCategoryRequest request, 
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        // Business logic: validation, mapping, persistence
+        // 1. Validation
         if (await IsValidCategoryNameAsync(request.Name))
-            throw new ValidatorException("Name", "Category name already exists");
+            throw new ValidatorException(
+                nameof(CreateCategoryRequest.Name), 
+                $"Category with name {request.Name} already exists.");
 
+        // 2. Mapping
         Category category = _mapper.Map<Category>(request);
+        
+        // 3. Persistence
         await _unitOfWork.CategoryRepository.CreateAsync(category, cancellationToken);
         
+        // 4. Return DTO
         return _mapper.Map<CategoryDto>(category);
     }
+
+    // UPDATE operation
+    public async Task<CategoryDto> UpdateCategoryAsync(
+        int id,
+        UpdateCategoryRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        // 1. Validation - check name unique for other categories
+        if (await IsValidCategoryNameAsync(id, request.Name, cancellationToken))
+            throw new ValidatorException(
+                nameof(UpdateCategoryRequest.Name), 
+                $"Category with name {request.Name} already exists.");
+
+        // 2. Get existing category
+        Category category = await GetCategoryByIdAsync(id, cancellationToken);
+
+        // 3. Map new values
+        _mapper.Map(request, category);
+
+        // 4. Persistence
+        await _unitOfWork.CategoryRepository.UpdateAsync(category, cancellationToken);
+
+        // 5. Return DTO
+        return _mapper.Map<CategoryDto>(category);
+    }
+
+    // DELETE operation
+    public async Task<bool> DeleteCategoryAsync(
+        int id, 
+        CancellationToken cancellationToken = default)
+    {
+        Category category = await GetCategoryByIdAsync(id, cancellationToken);
+        await _unitOfWork.CategoryRepository.DeleteAsync(category, cancellationToken);
+        return true;
+    }
+
+    // Helper methods
+    private async Task<Category> GetCategoryByIdAsync(
+        int id, 
+        CancellationToken cancellation = default)
+    {
+        return await _unitOfWork.CategoryRepository.GetByIdAsync(id, cancellation)
+            ?? throw new NotFoundException($"Category with ID {id} not found.");
+    }
+
+    private async Task<bool> IsValidCategoryNameAsync(string name)
+    {
+        return await _unitOfWork.CategoryRepository
+            .IsExistsAsync(nameof(Category.Name), name);
+    }
+
+    private async Task<bool> IsValidCategoryNameAsync(
+        int id, 
+        string name, 
+        CancellationToken cancellation = default)
+    {
+        return await _unitOfWork.CategoryRepository.IsExistsForUpdateAsync(
+            id, nameof(Category.Name), name, cancellation);
+    }
+}
+```
+
+### Example: Get Category Flow (Read Operation)
+
+**1. Query** - Wraps request
+```csharp
+// Features/Categories/Queries/GetById/GetCategoryByIdQuery.cs
+public record GetCategoryByIdQuery(int Id) : IRequest<CategoryDto>;
+```
+
+**2. Query Handler** - Thin orchestration
+```csharp
+// Features/Categories/Queries/GetById/GetByIdQueryHandler.cs
+public class GetCategoryByIdQueryHandler 
+    : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
+{
+    private readonly ICategoryReadService _categoryReadService;
+    
+    public GetCategoryByIdQueryHandler(ICategoryReadService categoryReadService)
+    {
+        _categoryReadService = categoryReadService;
+    }
+
+    public async Task<CategoryDto> Handle(
+        GetCategoryByIdQuery query, 
+        CancellationToken cancellationToken)
+    {
+        // Handler delegates to read service
+        return await _categoryReadService.GetByIdAsync(
+            query.Id, 
+            cancellationToken);
+    }
+}
+```
+
+**3. Read Service** - Optimized for queries
+```csharp
+// Features/Categories/Shared/Services/CategoryReadService.cs
+public class CategoryReadService : ICategoryReadService
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public async Task<CategoryDto> GetByIdAsync(
+        int id, 
+        CancellationToken cancellationToken)
+    {
+        return await _unitOfWork.CategoryRepository.GetOneUntrackedAsync(
+            filter: c => c.Id == id && !c.IsDeleted,
+            selector: c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description
+            },
+            cancellation: cancellationToken) 
+            ?? throw new NotFoundException($"Category {id} not found");
+    }
+}
+```
 
     private async Task<bool> IsValidCategoryNameAsync(string name)
     {
