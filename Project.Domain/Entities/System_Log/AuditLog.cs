@@ -1,8 +1,9 @@
-﻿using Project.Domain.Entities.Identity_Auth;
+﻿using Project.Domain.Entities.Base;
+using Project.Domain.Entities.Identity_Auth;
 
 namespace Project.Domain.Entities.System_Log
 {
-    public class AuditLog
+    public class AuditLog : IAggregateRoot
     {
         public int Id { get; set; }
         public int? UserId { get; set; }

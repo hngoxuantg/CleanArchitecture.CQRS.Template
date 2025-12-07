@@ -18,6 +18,13 @@ namespace Project.Infrastructure.Data.Contexts.Config
             builder.HasMany(c => c.Products)
                 .WithOne(c => c.Category)
                 .HasForeignKey(c => c.CategoryId);
+
+            builder.Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(c => c.Description)
+                .HasMaxLength(1000);
         }
     }
 }

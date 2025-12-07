@@ -54,6 +54,20 @@ namespace Project.Application.Features.Categories.Shared.Services
             return _mapper.Map<CategoryDto>(category);
         }
 
+        public async Task<CategoryDto> UpdateDescriptionCategoryAsync(
+            int id,
+            string description,
+            CancellationToken cancellationToken = default)
+        {
+            Category category = await GetCategoryByIdAsync(id, cancellationToken);
+
+            category.SetDescription(description);
+
+            await _unitOfWork.CategoryRepository.UpdateAsync(category, cancellationToken);
+
+            return _mapper.Map<CategoryDto>(category);
+        }
+
         public async Task<bool> DeleteCategoryAsync(int id, CancellationToken cancellationToken = default)
         {
             Category category = await GetCategoryByIdAsync(id, cancellationToken);

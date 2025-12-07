@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Features.Categories.Commands;
+using Project.Application.Features.Categories.Commands.UpdateDescriptionCategory;
 using Project.Application.Features.Categories.Queries.GetById;
 using Project.Application.Features.Categories.Request;
 using Project.Common.Constants;
@@ -106,6 +107,28 @@ namespace Project.API.Controllers.V1
             {
                 Success = true,
                 Message = "Category deleted successfully"
+            });
+        }
+
+        [EnableRateLimiting(RateLimitPolicies.PerUser)]
+        [Authorize(Roles = "Admin ")]
+        [HttpPatch("{id:int}/description")]
+        public async Task<IActionResult> UpdateCategoryDescriptionAsync(
+            [FromRoute] int id,
+            [FromBody] UpdateDescriptionCategoryRequest updateDescriptionCategoryRequest,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(
+                new UpdateDescriptionCategoryCommand(id, updateDescriptionCategoryRequest),
+                cancellationToken);
+
+            _cache.Remove($"Category_{id}");
+
+            return Ok(new ApiResponse<CategoryDto>
+            {
+                Success = true,
+                Message = "Category description updated successfully",
+                Data = result
             });
         }
     }

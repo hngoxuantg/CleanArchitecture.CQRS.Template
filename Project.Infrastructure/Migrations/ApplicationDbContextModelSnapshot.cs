@@ -146,17 +146,16 @@ namespace Project.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
@@ -193,19 +192,16 @@ namespace Project.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(55)
-                        .HasColumnType("nvarchar(55)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -221,6 +217,50 @@ namespace Project.Infrastructure.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Product", (string)null);
+                });
+
+            modelBuilder.Entity("Project.Domain.Entities.Business.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreateBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeleteBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdateBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImage");
                 });
 
             modelBuilder.Entity("Project.Domain.Entities.Identity_Auth.RefreshToken", b =>
@@ -392,7 +432,7 @@ namespace Project.Infrastructure.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("Project.Domain.Entities.System_Logs.AuditLog", b =>
+            modelBuilder.Entity("Project.Domain.Entities.System_Log.AuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -503,6 +543,17 @@ namespace Project.Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Project.Domain.Entities.Business.ProductImage", b =>
+                {
+                    b.HasOne("Project.Domain.Entities.Business.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Project.Domain.Entities.Identity_Auth.RefreshToken", b =>
                 {
                     b.HasOne("Project.Domain.Entities.Identity_Auth.User", "User")
@@ -514,7 +565,7 @@ namespace Project.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Project.Domain.Entities.System_Logs.AuditLog", b =>
+            modelBuilder.Entity("Project.Domain.Entities.System_Log.AuditLog", b =>
                 {
                     b.HasOne("Project.Domain.Entities.Identity_Auth.User", "User")
                         .WithMany("AuditLogs")
@@ -527,6 +578,11 @@ namespace Project.Infrastructure.Migrations
             modelBuilder.Entity("Project.Domain.Entities.Business.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Project.Domain.Entities.Business.Product", b =>
+                {
+                    b.Navigation("ProductImages");
                 });
 
             modelBuilder.Entity("Project.Domain.Entities.Identity_Auth.User", b =>

@@ -15,5 +15,10 @@ namespace Project.Application.Features.Categories.Shared.Interfaces
             CancellationToken cancellationToken = default);
 
         Task<bool> DeleteCategoryAsync(int id, CancellationToken cancellationToken = default);
+
+        Task<CategoryDto> UpdateDescriptionCategoryAsync(
+            int id,
+            string description,
+            CancellationToken cancellationToken = default);
     }
 }

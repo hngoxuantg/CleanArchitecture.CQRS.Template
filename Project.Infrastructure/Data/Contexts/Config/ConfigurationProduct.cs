@@ -19,6 +19,21 @@ namespace Project.Infrastructure.Data.Contexts.Config
                 .WithMany(pc => pc.Products)
                 .HasForeignKey(pc => pc.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Property(p => p.Name)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(p => p.Description)
+                .HasMaxLength(1000);
+
+            builder.Property(p => p.Price)
+                .IsRequired();
+
+            builder.HasMany(p => p.ProductImages)
+                .WithOne(pi => pi.Product)
+                .HasForeignKey(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

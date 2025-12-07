@@ -18,10 +18,9 @@ namespace Project.Application.Common.Mappers
                 opt => opt.MapFrom(src => src.Description));
 
             CreateMap<CreateCategoryRequest, Category>()
-                .ForMember(dest => dest.Name,
-                opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Description,
-                opt => opt.MapFrom(src => src.Description));
+                .ConstructUsing(src => new Category(
+                    src.Name,
+                    src.Description));
 
             CreateMap<UpdateCategoryRequest, Category>()
                 .ForMember(dest => dest.Name,

@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Domain.Entities.Base;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using Project.Infrastructure.Data.Contexts;
 using System.Linq.Expressions;
 
 namespace Project.Infrastructure.Data.Repositories.BaseRepositories
 {
-    public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
+    public abstract class BaseRepository<T> : IBaseRepository<T> where T : class, IAggregateRoot
     {
         protected readonly ApplicationDbContext _dbContext;
         public BaseRepository(ApplicationDbContext dbContext)

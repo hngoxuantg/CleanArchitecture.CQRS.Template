@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using Project.Domain.Entities.Base;
+using System.Linq.Expressions;
 
 namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
 {
-    public interface IBaseRepository<T> where T : class
+    public interface IBaseRepository<T> where T : class, IAggregateRoot
     {
         Task<IEnumerable<TResult>> GetAllAsync<TResult>(
             Expression<Func<T, bool>>? filter = null,
