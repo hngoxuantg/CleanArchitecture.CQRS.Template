@@ -30,6 +30,7 @@ namespace Project.API.Extensions
             RegisterSeedData(services);
             return services;
         }
+
         public static IServiceCollection RegisterServices(IServiceCollection services)
         {
             services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -43,6 +44,7 @@ namespace Project.API.Extensions
 
             return services;
         }
+
         public static IServiceCollection RegisterRepositories(IServiceCollection services)
         {
             services.AddScoped<IRoleRepository, RoleRepository>();
@@ -54,11 +56,13 @@ namespace Project.API.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             return services;
         }
+
         public static IServiceCollection RegisterSeedData(IServiceCollection services)
         {
             services.AddScoped<IDataSeedingService, DataSeedingService>();
             return services;
         }
+        
         public static IServiceCollection RegisterValidator(IServiceCollection services)
         {
             return services;
