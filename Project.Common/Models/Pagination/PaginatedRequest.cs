@@ -4,8 +4,8 @@ namespace Project.Common.Models.Pagination
 {
     public abstract class PaginatedRequest
     {
-        public int _pageNumber = 1;
-        public int _pageSize = 12;
+        private int _pageNumber = 1;
+        private int _pageSize = 12;
         public virtual int PageNumber
         {
             get => _pageNumber;
