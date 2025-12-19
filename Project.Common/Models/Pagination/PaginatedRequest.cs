@@ -6,6 +6,7 @@ namespace Project.Common.Models.Pagination
     {
         private int _pageNumber = 1;
         private int _pageSize = 12;
+
         public virtual int PageNumber
         {
             get => _pageNumber;
@@ -15,6 +16,7 @@ namespace Project.Common.Models.Pagination
                     _pageNumber = value;
             }
         }
+
         public virtual int PageSize
         {
             get => _pageSize;
@@ -24,6 +26,7 @@ namespace Project.Common.Models.Pagination
                     _pageSize = value;
             }
         }
+
         [MaxLength(50, ErrorMessage = "Cannot exceed 50 characters")]
         public virtual string? Search { get; set; }
     }
