@@ -92,7 +92,11 @@ Project.Common/                       # Cross-cutting concerns
   ├── Options/                        # Configuration options
   └── Extensions/                     # Extension methods
 
-Project.UnitTest/                     # Unit tests (TODO)
+Project.UnitTest/                     # Unit tests
+  ├── Features/                       # Feature tests
+  │   ├── Auth/                       # Authentication tests
+  │   └── Shared/                     # Shared service tests
+  └── Project.UnitTest.csproj
 ```
 
 ## CQRS Pattern with Write/Read Services
@@ -111,7 +115,7 @@ Query Handler   → Read Service  → Repository
 - Handlers are **thin** (5-10 lines) - orchestration only
 - Services are **fat** - contain all business logic
 
-✅ **Benefits:**
+**Benefits:**
 - Clear separation: Write vs Read operations
 - Thin handlers - only delegate to services
 - Services can be optimized independently (WriteService with transactions, ReadService with caching)
@@ -460,11 +464,9 @@ API available at:
 
 | Service | Responsibility |
 |---------|----------------|
-| `IAuthService` | Login, logout, register, token refresh |
-| `ICategoryCreationService` | Category creation logic |
-| `ICategoryUpdateService` | Category update logic |
-| `ICategoryDeletionService` | Category deletion logic |
-| `ICategoryQueryService` | Category query logic |
+| `IAuthWriteService` | Login, logout, token refresh |
+| `ICategoryWriteService` | Category create, update, delete operations |
+| `ICategoryReadService` | Category query operations |
 | `IJwtTokenService` | JWT generation & validation |
 | `ICurrentUserService` | Current user context |
 | `IFileService` | File upload/storage |
@@ -724,11 +726,109 @@ public class ProductsController : ControllerBase
 ### Database
 - **SQL Server** - Production database
 
+### Testing
+- **xUnit 2.5.3** - Unit testing framework
+- **NSubstitute 5.3.0** - Mocking library for unit tests
+- **AutoFixture 4.18.1** - Test data generation
+- **Microsoft.NET.Test.Sdk 17.8.0** - Test SDK
+- **coverlet.collector 6.0.0** - Code coverage
+
+## Unit Testing
+
+This project includes comprehensive unit tests for business logic layer (Shared Services).
+
+### Testing Stack
+
+| Library | Purpose |
+|---------|----------|
+| **xUnit** | Unit testing framework |
+| **NSubstitute** | Mocking dependencies (repositories, external services) |
+| **AutoFixture** | Automatic test data generation |
+| **coverlet** | Code coverage collection |
+
+### Test Structure
+
+```
+Project.UnitTest/
+├── Features/
+│   ├── Auth/
+│   │   └── AuthWriteServiceTests.cs           # Authentication service tests
+│   └── Shared/
+│       └── CategoryWriteServiceTests.cs       # Category service tests
+└── Project.UnitTest.csproj
+```
+
+### Testing Approach
+
+**Service Layer Testing** - Focus on testing business logic in Shared Services:
+- Mock dependencies using NSubstitute
+- Generate test data with AutoFixture
+- Verify business logic execution
+- Assert expected outcomes
+- Validate repository interactions
+
+**Test Naming Convention:**
+```
+MethodName_WhenCondition_ShouldExpectedBehavior
+```
+
+**Example Test:**
+```csharp
+[Fact]
+public async Task CreateCategoryAsync_WhenRequestIsValid_ShouldCreateCategory()
+{
+    CreateCategoryRequest request = _fixture.Create<CreateCategoryRequest>();
+    
+    _unitOfWork.CategoryRepository.IsExistsAsync(nameof(Category.Name), request.Name, Arg.Any<CancellationToken>())
+        .Returns(false);
+    
+    _unitOfWork.CategoryRepository.CreateAsync(Arg.Any<Category>(), Arg.Any<CancellationToken>())
+        .Returns(ci => ci.ArgAt<Category>(0));
+    
+    CategoryDto result = await _categoryWriteService.CreateCategoryAsync(request);
+    
+    Assert.NotNull(result);
+    Assert.Equal(request.Name, result.Name);
+    
+    await _unitOfWork.CategoryRepository.Received(1)
+        .CreateAsync(Arg.Is<Category>(c => c.Name == request.Name), Arg.Any<CancellationToken>());
+}
+```
+
+### Running Tests
+
+**Run all tests:**
+```bash
+dotnet test
+```
+
+**Run with coverage:**
+```bash
+dotnet test /p:CollectCoverage=true
+```
+
+**Run specific test class:**
+```bash
+dotnet test --filter "FullyQualifiedName~CategoryWriteServiceTests"
+```
+
+### Test Coverage
+
+**Current Coverage:**
+- AuthWriteService - LoginAsync, LogoutAsync, RefreshAsync
+- CategoryWriteService - CreateAsync, UpdateAsync, UpdateDescriptionAsync, DeleteAsync
+
+**Tested Scenarios:**
+- Happy path (valid inputs, successful operations)
+- Exception handling (validation errors, not found, business rule violations)
+- Transaction management (begin, commit, rollback)
+- Repository interactions verification
+
 
 
 ## Roadmap / TODO
 
-- [ ] Add Unit Tests (xUnit, Moq, FluentAssertions)
+- [ ] Expand Unit Test coverage for all services
 - [ ] Add Integration Tests
 - [ ] Implement Pagination for GetAll queries
 - [ ] Add Redis caching layer

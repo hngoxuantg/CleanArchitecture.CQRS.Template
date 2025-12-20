@@ -94,10 +94,9 @@ namespace Project.Application.Features.Auth.Shared.Services
                 oldToken.Revoke();
 
                 string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
-                string newRefreshToken = _jwtTokenService.GenerateRefreshToken();
 
                 RefreshToken newRefreshTokenEntity = new RefreshToken(
-                    user.Id, newRefreshToken,
+                    user.Id,
                     DateTime.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays),
                     deviceInfo,
                     ipAddress);
@@ -110,7 +109,7 @@ namespace Project.Application.Features.Auth.Shared.Services
                 return new AuthDto
                 {
                     AccessToken = accessToken,
-                    RefreshToken = newRefreshToken
+                    RefreshToken = newRefreshTokenEntity.Token
                 };
             }
             catch
@@ -158,11 +157,9 @@ namespace Project.Application.Features.Auth.Shared.Services
             User user, string? deviceInfo, string? ipAddress, CancellationToken cancellationToken)
         {
             string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
-            string refreshToken = _jwtTokenService.GenerateRefreshToken();
 
             RefreshToken newToken = new RefreshToken(
                 user.Id,
-                refreshToken,
                 DateTime.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays),
                 deviceInfo,
                 ipAddress);
@@ -172,7 +169,7 @@ namespace Project.Application.Features.Auth.Shared.Services
             return new AuthDto
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken
+                RefreshToken = newToken.Token
             };
         }
 

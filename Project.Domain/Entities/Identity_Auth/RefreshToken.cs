@@ -1,4 +1,5 @@
 ﻿using Project.Domain.Entities.Base;
+using System.Security.Cryptography;
 
 namespace Project.Domain.Entities.Identity_Auth
 {
@@ -21,15 +22,26 @@ namespace Project.Domain.Entities.Identity_Auth
 
         public bool IsActive => Revoked == null && !IsExpired;
 
-        public RefreshToken(int userId, string token, DateTime expiresAt, string deviceInfo, string ipAddress)
+        public RefreshToken(int userId, DateTime expiresAt, string deviceInfo, string ipAddress)
         {
             UserId = userId;
-            Token = token;
             ExpiresAt = expiresAt;
             DeviceInfo = deviceInfo;
             IpAddress = ipAddress;
+            Token = GenerateRefreshToken();
         }
 
         public void Revoke() => Revoked = DateTime.UtcNow;
+
+        private static string GenerateRefreshToken()
+        {
+            byte[] randomBytes = new byte[64];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+                return Convert.ToBase64String(randomBytes);
+            }
+        }
     }
 }

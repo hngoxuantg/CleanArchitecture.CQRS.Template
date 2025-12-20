@@ -6,7 +6,6 @@ using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Project.Infrastructure.ExternalServices.TokenServices
@@ -50,16 +49,6 @@ namespace Project.Infrastructure.ExternalServices.TokenServices
             SecurityToken token = jwtTokenHandler.CreateToken(securityTokenDescriptor);
             string jwtToken = jwtTokenHandler.WriteToken(token);
             return jwtToken;
-        }
-        public string GenerateRefreshToken()
-        {
-            byte[] randomBytes = new byte[64];
-
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomBytes);
-                return Convert.ToBase64String(randomBytes);
-            }
         }
     }
 }
