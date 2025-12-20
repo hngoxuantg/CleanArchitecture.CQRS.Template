@@ -105,7 +105,7 @@ namespace Project.UnitTest.Features.Shared
                 .UpdateAsync(Arg.Any<Category>(), Arg.Any<CancellationToken>())
                 .Returns(ci => ci.ArgAt<Category>(0));
 
-            var result = await _categoryWriteService.UpdateDescriptionCategoryAsync(categoryId, newDescription);
+            CategoryDto result = await _categoryWriteService.UpdateDescriptionCategoryAsync(categoryId, newDescription);
 
             Assert.NotNull(result);
             Assert.Equal(newDescription, result.Description);
@@ -127,7 +127,7 @@ namespace Project.UnitTest.Features.Shared
                 .GetByIdAsync(categoryId, Arg.Any<CancellationToken>())
                 .Returns(existingCategory);
 
-            var result = await _categoryWriteService.DeleteCategoryAsync(categoryId);
+            bool result = await _categoryWriteService.DeleteCategoryAsync(categoryId);
 
             Assert.True(result);
 
