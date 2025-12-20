@@ -30,7 +30,7 @@ namespace Project.API.Controllers.V1
         }
 
         [EnableRateLimiting(RateLimitPolicies.PerUser)]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateCategoryAsync(
             [FromBody] CreateCategoryRequest createCategoryRequest,
@@ -73,7 +73,7 @@ namespace Project.API.Controllers.V1
         }
 
         [EnableRateLimiting(RateLimitPolicies.PerUser)]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateCategoryAsync(
             [FromRoute] int id,
@@ -93,7 +93,7 @@ namespace Project.API.Controllers.V1
         }
 
         [EnableRateLimiting(RateLimitPolicies.PerUser)]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteCategoryAsync(
             [FromRoute] int id,
@@ -111,7 +111,7 @@ namespace Project.API.Controllers.V1
         }
 
         [EnableRateLimiting(RateLimitPolicies.PerUser)]
-        [Authorize(Roles = "Admin ")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPatch("{id:int}/description")]
         public async Task<IActionResult> UpdateCategoryDescriptionAsync(
             [FromRoute] int id,
