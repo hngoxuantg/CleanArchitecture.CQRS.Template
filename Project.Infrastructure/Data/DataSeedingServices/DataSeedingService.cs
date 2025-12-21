@@ -41,6 +41,7 @@ namespace Project.Infrastructure.Data.DataSeedingServices
                 for (int i = 0; i < roles.Count; i++)
                     await _roleManager.CreateAsync(roles[i]);
             }
+            
             if (!await _dbContext.Users.AnyAsync(cancellationToken))
             {
                 Role? role = await _roleManager.FindByNameAsync("Admin");
@@ -53,14 +54,18 @@ namespace Project.Infrastructure.Data.DataSeedingServices
 
                     LockoutEnabled = true
                 };
+
                 IdentityResult result = await _userManager.CreateAsync(user, _adminAccount.Account.Password);
+
                 if (!result.Succeeded)
                     throw new Exception($"Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
 
                 await _userManager.AddToRoleAsync(user, role.Name);
 
                 string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
                 IdentityResult confirmResult = await _userManager.ConfirmEmailAsync(user, token);
+
                 if (!confirmResult.Succeeded)
                     throw new Exception($"Failed to confirm admin email:" +
                         $" {string.Join(", ", confirmResult.Errors.Select(e => e.Description))}");

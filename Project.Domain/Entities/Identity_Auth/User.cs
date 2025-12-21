@@ -10,15 +10,13 @@ namespace Project.Domain.Entities.Identity_Auth
 
         public string? ImageUrl { get; set; }
 
-        public DateTime CreateAt { get; set; } = DateTime.Now;
+        public DateTime CreateAt { get; set; } = DateTime.UtcNow;
 
         public int? CreatedBy { get; set; }
 
         public DateTime? UpdateAt { get; set; }
 
         public int? UpdatedBy { get; set; }
-
-        public byte[]? RowVersion { get; set; }
 
 
         private readonly List<RefreshToken> _refreshTokens = new List<RefreshToken>();

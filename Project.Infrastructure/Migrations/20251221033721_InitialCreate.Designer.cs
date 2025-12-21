@@ -12,7 +12,7 @@ using Project.Infrastructure.Data.Contexts;
 namespace Project.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251207093819_InitialCreate")]
+    [Migration("20251221033721_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -402,9 +402,6 @@ namespace Project.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<byte[]>("RowVersion")
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
