@@ -59,6 +59,7 @@ namespace Project.UnitTest.Features.Auth
         {
             LoginRequest request = _fixture.Create<LoginRequest>();
             User user = _fixture.Create<User>();
+            IList<string> roles = _fixture.Create<List<string>>();
             string expectedAccessToken = _fixture.Create<string>();
             string deviceInfo = _fixture.Create<string>();
             string ipAddress = _fixture.Create<string>();
@@ -67,9 +68,10 @@ namespace Project.UnitTest.Features.Auth
             _userManager.IsLockedOutAsync(user).Returns(false);
             _userManager.CheckPasswordAsync(user, request.Password).Returns(true);
             _userManager.IsEmailConfirmedAsync(user).Returns(true);
+            _userManager.GetRolesAsync(user).Returns(roles);
             _currentUserService.IsAuthenticated.Returns(false);
 
-            _jwtTokenService.GenerateJwtTokenAsync(user, Arg.Any<CancellationToken>())
+            _jwtTokenService.GenerateJwtToken(user, roles)
                 .Returns(expectedAccessToken);
 
             AuthDto result = await _authWriteService.LoginAsync(request, deviceInfo, ipAddress);
@@ -167,6 +169,7 @@ namespace Project.UnitTest.Features.Auth
             string oldIp = _fixture.Create<string>();
             string newAccessToken = _fixture.Create<string>();
             int userId = _fixture.Create<int>();
+            IList<string> roles = _fixture.Create<List<string>>();
 
             RefreshToken oldTokenEntity = new RefreshToken(userId, DateTime.UtcNow.AddDays(1), oldDevice, oldIp);
             User user = _fixture.Build<User>().With(u => u.Id, userId).Create();
@@ -175,12 +178,13 @@ namespace Project.UnitTest.Features.Auth
                 .GetOneAsync<RefreshToken>(Arg.Any<Expression<Func<RefreshToken, bool>>>(), cancellation: Arg.Any<CancellationToken>())
                 .Returns(oldTokenEntity);
 
-            _unitOfWork.UserRepository
-                .GetByIdAsync(userId, cancellation: Arg.Any<CancellationToken>())
+            _userManager.FindByIdAsync(userId.ToString())
                 .Returns(user);
 
-            _jwtTokenService.GenerateJwtTokenAsync(user, Arg.Any<CancellationToken>())
+            _jwtTokenService.GenerateJwtToken(user, roles)
                 .Returns(newAccessToken);
+
+            _userManager.GetRolesAsync(user).Returns(roles);
 
             AuthDto result = await _authWriteService.RefreshAsync(oldTokenString, newDevice, newIp);
 
@@ -211,13 +215,13 @@ namespace Project.UnitTest.Features.Auth
             int userId = _fixture.Create<int>();
 
             RefreshToken tokenEntity = new RefreshToken(userId, DateTime.UtcNow.AddDays(1), deviceInfo, ipAddress);
+            User user = _fixture.Build<User>().With(u => u.Id, userId).Create();
 
             _unitOfWork.RefreshTokenRepository
                 .GetOneAsync<RefreshToken>(Arg.Any<Expression<Func<RefreshToken, bool>>>(), cancellation: Arg.Any<CancellationToken>())
                 .Returns(tokenEntity);
 
-            _unitOfWork.UserRepository
-                .GetByIdAsync(Arg.Any<int>(), cancellation: Arg.Any<CancellationToken>())
+            _userManager.FindByIdAsync(userId.ToString())
                 .Throws(new Exception("Database error simulaton"));
 
             Exception ex = await Assert.ThrowsAsync<Exception>(() =>

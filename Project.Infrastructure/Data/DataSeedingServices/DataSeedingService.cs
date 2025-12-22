@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Project.Application.Common.Interfaces.IDataSeedingServices;
 using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
-using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using Project.Infrastructure.Data.Contexts;
 
 namespace Project.Infrastructure.Data.DataSeedingServices
@@ -12,18 +11,15 @@ namespace Project.Infrastructure.Data.DataSeedingServices
     public class DataSeedingService : IDataSeedingService
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly AdminAccount _adminAccount;
         public DataSeedingService(
-            IUnitOfWork unitOfWork,
             UserManager<User> userManager,
             RoleManager<Role> roleManager,
             IOptions<AdminAccount> adminAccount,
             ApplicationDbContext applicationDbContext)
         {
-            _unitOfWork = unitOfWork;
             _userManager = userManager;
             _roleManager = roleManager;
             _adminAccount = adminAccount.Value;
@@ -41,7 +37,7 @@ namespace Project.Infrastructure.Data.DataSeedingServices
                 for (int i = 0; i < roles.Count; i++)
                     await _roleManager.CreateAsync(roles[i]);
             }
-            
+
             if (!await _dbContext.Users.AnyAsync(cancellationToken))
             {
                 Role? role = await _roleManager.FindByNameAsync("Admin");

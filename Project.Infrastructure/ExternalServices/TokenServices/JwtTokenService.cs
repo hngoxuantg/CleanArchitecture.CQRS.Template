@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
 using Project.Common.Options;
@@ -13,18 +12,14 @@ namespace Project.Infrastructure.ExternalServices.TokenServices
     public class JwtTokenService : IJwtTokenService
     {
         private readonly AppSettings _appSettings;
-        private readonly UserManager<User> _userManager;
-        public JwtTokenService(IOptions<AppSettings> appSettings, UserManager<User> userManager)
+        public JwtTokenService(IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
-            _userManager = userManager;
         }
-        public async Task<string> GenerateJwtTokenAsync(User user, CancellationToken cancellation = default)
+        public string GenerateJwtToken(User user, IList<string> roles)
         {
             JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
             byte[] key = Encoding.ASCII.GetBytes(_appSettings.JwtConfig.Secret);
-
-            IList<string> roles = await _userManager.GetRolesAsync(user);
 
             List<Claim> claims = new List<Claim>()
             {
@@ -46,8 +41,10 @@ namespace Project.Infrastructure.ExternalServices.TokenServices
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
             };
+
             SecurityToken token = jwtTokenHandler.CreateToken(securityTokenDescriptor);
             string jwtToken = jwtTokenHandler.WriteToken(token);
+
             return jwtToken;
         }
     }

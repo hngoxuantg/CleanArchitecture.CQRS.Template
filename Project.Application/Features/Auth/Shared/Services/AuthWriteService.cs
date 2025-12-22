@@ -48,7 +48,7 @@ namespace Project.Application.Features.Auth.Shared.Services
 
             await CheckEmailConfirmedAsync(user);
 
-            AuthDto authDto = await CreateTokensAsync(user, deviceInfo, ipAddress, cancellationToken);
+            AuthDto authDto = await CreateTokensAsync(user, deviceInfo, ipAddress);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -86,31 +86,17 @@ namespace Project.Application.Features.Auth.Shared.Services
                 if (!oldToken.IsActive)
                     throw new ValidatorException("Refresh token is not active or has expired");
 
-                User? user = await _unitOfWork.UserRepository.GetByIdAsync(
-                    oldToken.UserId,
-                    cancellation: cancellationToken)
+                User? user = await _userManager.FindByIdAsync(oldToken.UserId.ToString())
                     ?? throw new NotFoundException("User not found");
 
                 oldToken.Revoke();
 
-                string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
-
-                RefreshToken newRefreshTokenEntity = new RefreshToken(
-                    user.Id,
-                    DateTime.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays),
-                    deviceInfo,
-                    ipAddress);
-
-                _unitOfWork.RefreshTokenRepository.AddEntity(newRefreshTokenEntity);
+                AuthDto result = await CreateTokensAsync(user, deviceInfo, ipAddress);
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-                return new AuthDto
-                {
-                    AccessToken = accessToken,
-                    RefreshToken = newRefreshTokenEntity.Token
-                };
+                return result;
             }
             catch
             {
@@ -128,6 +114,11 @@ namespace Project.Application.Features.Auth.Shared.Services
                 ?? throw new NotFoundException($"User with UserName {userName} not found");
 
             return user;
+        }
+
+        private async Task<IList<string>> GetUserRolesAsync(User user)
+        {
+            return await _userManager.GetRolesAsync(user);
         }
 
         private async Task CheckLockoutAsync(User user)
@@ -148,15 +139,17 @@ namespace Project.Application.Features.Auth.Shared.Services
                 await _userManager.ResetAccessFailedCountAsync(user);
             }
         }
+
         private async Task CheckEmailConfirmedAsync(User user)
         {
             if (!await _userManager.IsEmailConfirmedAsync(user))
                 throw new BusinessRuleException("Email not verified!");
         }
+
         private async Task<AuthDto> CreateTokensAsync(
-            User user, string? deviceInfo, string? ipAddress, CancellationToken cancellationToken)
+            User user, string? deviceInfo, string? ipAddress)
         {
-            string accessToken = await _jwtTokenService.GenerateJwtTokenAsync(user, cancellationToken);
+            string accessToken = _jwtTokenService.GenerateJwtToken(user, await GetUserRolesAsync(user));
 
             RefreshToken newToken = new RefreshToken(
                 user.Id,
