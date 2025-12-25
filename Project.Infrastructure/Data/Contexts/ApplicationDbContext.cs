@@ -45,9 +45,9 @@ namespace Project.Infrastructure.Data.Contexts
 
             var entries = ChangeTracker.Entries()
                 .Where(e => e.Entity is BaseEntity && (
-                    e.State == EntityState.Added
-                    || e.State == EntityState.Modified
-                    || e.State == EntityState.Deleted))
+                    e.State == EntityState.Added ||
+                    e.State == EntityState.Modified ||
+                    e.State == EntityState.Deleted))
                 .ToList();
 
             foreach (var entry in entries)
