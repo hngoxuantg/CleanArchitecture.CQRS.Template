@@ -12,6 +12,7 @@ namespace Project.Infrastructure.ExternalServices.StorageServices
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         private readonly long _maxFileSize = 5 * 1024 * 1024;
         private readonly ILogger<FileService> _logger;
+
         public FileService(IHttpContextAccessor httpContextAccessor, ILogger<FileService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
