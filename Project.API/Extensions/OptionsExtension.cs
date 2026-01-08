@@ -10,6 +10,8 @@ namespace Project.API.Extensions
 
             services.Configure<AdminAccount>(configuration.GetSection("AdminAccount"));
 
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
             return services;
         }
     }

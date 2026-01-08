@@ -1,4 +1,6 @@
-﻿using Project.Application.Common.Interfaces.IDataSeedingServices;
+﻿using Project.Application.Common.Interfaces.IBackgroundJobs;
+using Project.Application.Common.Interfaces.IDataSeedingServices;
+using Project.Application.Common.Interfaces.IExternalServices.IMailServices;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
 using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
 using Project.Application.Common.Interfaces.IServices;
@@ -10,11 +12,13 @@ using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using Project.Domain.Interfaces.IRepositories.IBusinessRepositories;
 using Project.Domain.Interfaces.IRepositories.IIdentity_AuthRepositories;
 using Project.Domain.Interfaces.IRepositories.ISystem_LogRepositories;
+using Project.Infrastructure.BackgroundJobs;
 using Project.Infrastructure.Data.DataSeedingServices;
 using Project.Infrastructure.Data.Repositories.BaseRepositories;
 using Project.Infrastructure.Data.Repositories.BusinessRepositories;
 using Project.Infrastructure.Data.Repositories.Identity_AuthRepositories;
 using Project.Infrastructure.Data.Repositories.System_LogRepositories;
+using Project.Infrastructure.ExternalServices.MailServices;
 using Project.Infrastructure.ExternalServices.StorageServices;
 using Project.Infrastructure.ExternalServices.TokenServices;
 using Project.Infrastructure.Services;
@@ -36,6 +40,9 @@ namespace Project.API.Extensions
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IMailService, MailService>();
+
+            services.AddScoped<IBackgroundJobService, HangfireJobService>();
 
             services.AddScoped<IAuthWriteService, AuthWriteService>();
 

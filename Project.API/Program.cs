@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using Project.API.Extensions;
 using Project.API.Middlewares;
 using Project.Application.Common.Mappers;
@@ -18,6 +19,7 @@ builder.Services.AddCustomOptions(builder.Configuration);
 
 #region Custom Services
 builder.Services.Register();
+builder.Services.AddCustomHangfire(builder.Configuration);
 builder.Services.RegisterSecurityService(builder.Configuration);
 builder.Services.AddCustomCors(builder.Configuration);
 builder.Services.AddCustomRateLimit(builder.Configuration);
@@ -57,6 +59,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseCustomSwaggerUI();
 }
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
