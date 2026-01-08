@@ -1,12 +1,12 @@
 # Web API Clean Architecture with CQRS & Shared Services
 
-Clean architecture Web API template with advanced CQRS pattern, MediatR, Shared Business Services, JWT authentication and refresh token implementation.
+Clean architecture Web API template with advanced CQRS pattern, MediatR, Shared Business Services, JWT authentication, refresh token implementation, Hangfire background jobs, and automated email notifications.
 
 ## Overview
 
-.NET 10 Web API enterprise template implementing clean architecture with CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, repository pattern, and production-grade patterns.
+.NET 10 Web API enterprise template implementing clean architecture with CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, background job processing with Hangfire, SMTP email service, repository pattern, and production-grade patterns.
 
-This template implements CQRS by **separating business logic into Shared Services**, keeping handlers thin and focused solely on orchestration.
+This template implements CQRS by **separating business logic into Shared Services**, keeping handlers thin and focused solely on orchestration, with **asynchronous email notifications** for business events.
 
 ## Features
 
@@ -24,6 +24,10 @@ This template implements CQRS by **separating business logic into Shared Service
 - **AutoMapper** - Object-to-object mapping
 - **Structured Logging** - Request/Response logging middleware
 - **Rate Limiting** - Per-user, per-IP, and login attempt rate limiting policies
+- **Background Jobs** - Hangfire for asynchronous task processing
+- **Email Service** - SMTP email sending with HTML templates
+- **Notification System** - Automated email notifications for business events
+- **Memory Caching** - In-memory caching for frequently accessed data
 
 ## Project Structure
 
@@ -68,8 +72,13 @@ Project.Application/                  # CQRS Commands/Queries, Business logic
   │
   └── Common/                         # Shared application code
       ├── DTOs/                       # Data Transfer Objects
+      │   └── Emails/                 # Email DTOs (EmailDto)
       ├── Exceptions/                 # Custom exceptions
       ├── Interfaces/                 # Common interfaces
+      │   ├── IBackgroundJobs/        # Background job interfaces
+      │   ├── IExternalServices/      # External service interfaces
+      │   │   └── IMailServices/      # Email service interfaces
+      │   └── IServices/              # Application service interfaces
       └── Mappers/                    # AutoMapper profiles
 
 Project.Infrastructure/               # Data access, external services
@@ -77,8 +86,11 @@ Project.Infrastructure/               # Data access, external services
   │   ├── Contexts/                   # DbContext
   │   ├── Repositories/               # Repository implementations
   │   └── Migrations/                 # EF Core migrations
+  ├── BackgroundJobs/                 # Background job implementations
+  │   └── HangfireJobService.cs       # Hangfire background service
   └── ExternalServices/               # External integrations
       ├── TokenServices/              # JWT service
+      ├── MailServices/               # Email service implementation
       └── StorageServices/            # File storage
 
 Project.Domain/                       # Core business entities
@@ -212,7 +224,12 @@ public class CategoryWriteService : ICategoryWriteService
         // 3. Persistence
         await _unitOfWork.CategoryRepository.CreateAsync(category, cancellationToken);
         
-        // 4. Return DTO
+        // 4. Send notification email (background job)
+        SendNotificationEmailAsync(category.Name,
+            await GetUserByIdAsync(_currentUserService.UserId.ToString() ?? string.Empty),
+            cancellationToken);
+        
+        // 5. Return DTO
         return _mapper.Map<CategoryDto>(category);
     }
 
@@ -251,6 +268,18 @@ public class CategoryWriteService : ICategoryWriteService
         return true;
     }
 
+    // UPDATE DESCRIPTION operation
+    public async Task<CategoryDto> UpdateDescriptionCategoryAsync(
+        int id,
+        string description, 
+        CancellationToken cancellationToken = default)
+    {
+        Category category = await GetCategoryByIdAsync(id, cancellationToken);
+        category.SetDescription(description);
+        await _unitOfWork.CategoryRepository.UpdateAsync(category, cancellationToken);
+        return _mapper.Map<CategoryDto>(category);
+    }
+
     // Helper methods
     private async Task<Category> GetCategoryByIdAsync(
         int id, 
@@ -273,6 +302,25 @@ public class CategoryWriteService : ICategoryWriteService
     {
         return await _unitOfWork.CategoryRepository.IsExistsForUpdateAsync(
             id, nameof(Category.Name), name, cancellation);
+    }
+
+    // Email notification helper
+    private void SendNotificationEmailAsync(string categoryName, User user, CancellationToken cancellation = default)
+    {
+        EmailDto email = new EmailDto
+        {
+            To = user.Email ?? string.Empty,
+            Subject = $"[Notification] New Category Created: {categoryName}",
+            TemplateName = "CategoryCreated",
+            TemplateData = new Dictionary<string, string>
+            {
+                { "AdminName", user.FullName ?? "Admin" },
+                { "CategoryName", categoryName },
+                { "CreatedDate", DateTime.Now.ToString("dd/MM/yyyy HH:mm") }
+            }
+        };
+
+        _backgroundJob.EnqueueSendEmail(email);
     }
 }
 ```
@@ -383,11 +431,12 @@ cd CleanArchitecture.CQRS.Template
 dotnet restore
 ```
 
-2. **Update connection string** in `Project.API/appsettings.json`
+2. **Update connection strings** in `Project.API/appsettings.json`
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;"
+    "PrimaryDbConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;",
+    "HangfireDbConnection": "Server=(localdb)\\mssqllocaldb;Database=HangfireDb;Trusted_Connection=true;TrustServerCertificate=true;"
   }
 }
 ```
@@ -398,29 +447,44 @@ dotnet restore
   "AppSettings": {
     "JwtConfig": {
       "Secret": "your-super-secret-key-minimum-32-characters-long",
-      "ValidIssuer": "YourApp",
-      "ValidAudience": "YourAppUsers",
-      "AccessTokenExpirationMinutes": 15,
+      "ValidIssuer": "https://localhost:7191",
+      "ValidAudience": "http://localhost:5174",
+      "TokenExpirationMinutes": 15,
       "RefreshTokenExpirationDays": 7
     }
   }
 }
 ```
 
-4. **Apply database migrations**
+4. **Configure Email Settings** in `appsettings.json`
+```json
+{
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SmtpUser": "your-email@gmail.com",
+    "Password": "your-app-password",
+    "From": "your-email@gmail.com",
+    "DisplayName": "YourApp"
+  }
+}
+```
+
+5. **Apply database migrations**
 ```bash
 dotnet ef database update --project Project.Infrastructure --startup-project Project.API
 ```
 
-5. **Run the application**
+6. **Run the application**
 ```bash
 dotnet run --project Project.API
 ```
 
 API available at:
-- **HTTPS:** `https://localhost:7001`
-- **HTTP:** `http://localhost:5001`
-- **Swagger:** `https://localhost:7001/swagger`
+- **HTTPS:** `https://localhost:7191`
+- **HTTP:** `http://localhost:5246`
+- **Swagger:** `https://localhost:7191/swagger`
+- **Hangfire Dashboard:** `https://localhost:7191/hangfire`
 
 ## Authentication Flow
 
@@ -469,6 +533,8 @@ API available at:
 | `ICategoryReadService` | Category query operations |
 | `IJwtTokenService` | JWT generation & validation |
 | `ICurrentUserService` | Current user context |
+| `IMailService` | Email sending with templates and attachments |
+| `IBackgroundJobService` | Asynchronous task queueing with Hangfire |
 | `IFileService` | File upload/storage |
 
 ### Custom Exceptions
@@ -487,6 +553,164 @@ API available at:
 | `ExceptionHandlingMiddleware` | Global exception handling, logging |
 | `RequestResponseLoggingMiddleware` | Log all requests/responses |
 
+## Background Jobs & Email System
+
+This template includes a comprehensive background job system with email notifications:
+
+### Hangfire Integration
+
+**Hangfire Configuration:**
+- **Database**: Separate SQL Server database for Hangfire storage
+- **Dashboard**: Available at `/hangfire` endpoint
+- **Processing**: Automatic background job processing
+- **Retry**: Built-in failure retry mechanism
+
+**Setup in Program.cs:**
+```csharp
+builder.Services.AddCustomHangfire(builder.Configuration);
+app.UseHangfireDashboard("/hangfire");
+```
+
+### Email Service Architecture
+
+**Interface Layer (Application/Common/Interfaces):**
+```csharp
+// IMailService.cs - Email sending interface
+public interface IMailService
+{
+    Task SendEmailAsync(EmailDto email, CancellationToken cancellation = default);
+}
+
+// IBackgroundJobService.cs - Background job interface  
+public interface IBackgroundJobService
+{
+    void EnqueueSendEmail(EmailDto email);
+}
+```
+
+**Implementation Layer (Infrastructure):**
+```csharp
+// MailService.cs - SMTP email implementation
+public class MailService : IMailService
+{
+    private readonly EmailSettings _emailSettings;
+    
+    public async Task SendEmailAsync(EmailDto email, CancellationToken cancellation = default)
+    {
+        // HTML template rendering
+        // SMTP client setup (MailKit)
+        // Email sending with attachments support
+    }
+}
+
+// HangfireJobService.cs - Background job implementation
+public class HangfireJobService : IBackgroundJobService
+{
+    public void EnqueueSendEmail(EmailDto email)
+    {
+        BackgroundJob.Enqueue<IMailService>(job => job.SendEmailAsync(email));
+    }
+}
+```
+
+### Email Templates
+
+**Built-in Templates:**
+- **CategoryCreated**: Professional HTML template for category creation notifications
+
+**Template Features:**
+- Responsive HTML design
+- Dynamic placeholder replacement
+- Professional styling with company branding
+- Support for custom template data
+
+**Example Template Usage:**
+```csharp
+EmailDto email = new EmailDto
+{
+    To = user.Email,
+    Subject = "[Notification] New Category Created: Electronics",
+    TemplateName = "CategoryCreated",
+    TemplateData = new Dictionary<string, string>
+    {
+        { "AdminName", "John Doe" },
+        { "CategoryName", "Electronics" },
+        { "CreatedDate", "08/01/2026 14:30" }
+    }
+};
+
+_backgroundJob.EnqueueSendEmail(email);
+```
+
+### Business Event Notifications
+
+**Automated Notifications:**
+- **Category Creation**: Email notification to admin user
+- **Asynchronous Processing**: Non-blocking background execution
+- **Failure Handling**: Automatic retry on email delivery failures
+
+**Integration Example:**
+```csharp
+public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryRequest request, ...)
+{
+    // 1. Business logic
+    Category category = _mapper.Map<Category>(request);
+    await _unitOfWork.CategoryRepository.CreateAsync(category, cancellationToken);
+    
+    // 2. Queue email notification
+    SendNotificationEmailAsync(category.Name, currentUser, cancellationToken);
+    
+    return _mapper.Map<CategoryDto>(category);
+}
+
+private void SendNotificationEmailAsync(string categoryName, User user, ...)
+{
+    _backgroundJob.EnqueueSendEmail(new EmailDto { /* email data */ });
+}
+```
+
+## Caching Strategy
+
+The template implements **in-memory caching** for optimized read operations:
+
+### Implementation Details
+
+**Cache Integration in Controllers:**
+```csharp
+[HttpGet("{id:int}")]
+public async Task<IActionResult> GetCategoryByIdAsync([FromRoute] int id)
+{
+    var result = new CategoryDto();
+
+    // Try to get from cache first
+    if (_cache.TryGetValue($"Category_{id}", out CategoryDto? category))
+    {
+        result = category;
+    }
+    else
+    {
+        // If not in cache, query database
+        result = await _sender.Send(new GetCategoryByIdQuery(id));
+
+        // Cache the result for 10 minutes
+        if (result != null)
+            _cache.Set($"Category_{id}", result, TimeSpan.FromMinutes(10));
+    }
+
+    return Ok(new ApiResponse<CategoryDto> { Data = result });
+}
+```
+
+**Cache Invalidation:**
+- **Update Operations**: Remove cache on PUT/PATCH operations
+- **Delete Operations**: Remove cache on DELETE operations
+- **Time-based Expiry**: 10 minutes TTL for cached entries
+
+**Benefits:**
+- Reduced database queries for frequently accessed data
+- Improved response times for read operations
+- Automatic cache invalidation on data modifications
+
 ## API Endpoints
 
 ### Authentication
@@ -499,11 +723,14 @@ POST   /api/v1/auth/logout         - Logout user
 
 ### Categories (Protected - requires authentication)
 ```
-POST   /api/v1/categories          - Create category [Admin only]
-GET    /api/v1/categories/{id}     - Get category by ID
-PUT    /api/v1/categories/{id}     - Update category [Admin only]
-DELETE /api/v1/categories/{id}     - Delete category [Admin only]
+POST   /api/v1/categories                    - Create category [Admin only]
+GET    /api/v1/categories/{id}               - Get category by ID
+PUT    /api/v1/categories/{id}               - Update category [Admin only]
+PATCH  /api/v1/categories/{id}/description   - Update category description [Admin only]
+DELETE /api/v1/categories/{id}               - Delete category [Admin only]
 ```
+
+*Note: GetAll/List endpoints are not yet implemented - planned for future release with pagination support.*
 
 ## Configuration
 
@@ -512,7 +739,8 @@ DELETE /api/v1/categories/{id}     - Delete category [Admin only]
 ```json
 {
   "ConnectionStrings": {
-    "PrimaryDbConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;"
+    "PrimaryDbConnection": "Server=(localdb)\\mssqllocaldb;Database=CleanArchCQRS;Trusted_Connection=true;TrustServerCertificate=true;",
+    "HangfireDbConnection": "Server=(localdb)\\mssqllocaldb;Database=HangfireDb;Trusted_Connection=true;TrustServerCertificate=true;"
   },
   "AppSettings": {
     "JwtConfig": {
@@ -545,6 +773,14 @@ DELETE /api/v1/categories/{id}     - Delete category [Admin only]
       "Email": "admin@example.com",
       "PhoneNumber": "0987654321"
     }
+  },
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SmtpUser": "your-email@gmail.com",
+    "Password": "your-app-password",
+    "From": "your-email@gmail.com",
+    "DisplayName": "WebAPI_Project"
   },
   "AllowedCors": {
     "Origins": [
@@ -723,6 +959,12 @@ public class ProductsController : ControllerBase
 - **Microsoft.AspNetCore.Mvc.Versioning 5.1.0** - API versioning
 - **Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer 5.1.0** - API version explorer
 
+### Background Jobs & Email
+- **Hangfire 1.8.19** - Background job processing
+- **Hangfire.SqlServer 1.8.19** - SQL Server storage for Hangfire
+- **MailKit 4.9.0** - SMTP email client library
+- **MimeKit 4.9.0** - MIME message construction
+
 ### Database
 - **SQL Server** - Production database
 
@@ -832,11 +1074,12 @@ dotnet test --filter "FullyQualifiedName~CategoryWriteServiceTests"
 - [ ] Add Integration Tests
 - [ ] Implement Pagination for GetAll queries
 - [ ] Add Redis caching layer
-- [ ] Implement Background Jobs (Hangfire)
-- [ ] Implement Email service
 - [ ] Add Health Checks
 - [ ] Docker support
 - [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Extend email templates for more business events
+- [ ] Add push notifications
+- [ ] Implement file upload/download endpoints
 
 ## Contributing
 
