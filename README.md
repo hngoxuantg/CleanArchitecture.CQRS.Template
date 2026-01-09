@@ -4,9 +4,7 @@ Clean architecture Web API template with advanced CQRS pattern, MediatR, Shared 
 
 ## Overview
 
-.NET 10 Web API enterprise template implementing clean architecture with CQRS (Command Query Responsibility Segregation) pattern, MediatR, **Shared Business Services**, JWT authentication, refresh tokens, background job processing with Hangfire, SMTP email service, repository pattern, and production-grade patterns.
-
-This template implements CQRS by **separating business logic into Shared Services**, keeping handlers thin and focused solely on orchestration, with **asynchronous email notifications** for business events.
+.NET 10 Web API template with Clean Architecture, CQRS pattern, MediatR, JWT authentication, Hangfire background jobs, and SMTP email notifications. Implements **Shared Business Services** pattern with thin handlers for orchestration.
 
 ## Features
 
@@ -32,383 +30,50 @@ This template implements CQRS by **separating business logic into Shared Service
 ## Project Structure
 
 ```
-Project.API/                          # Controllers, middleware, configuration
-  ├── Controllers/V1/                 # Versioned API controllers
-  ├── Extensions/                     # Service registration extensions
-  ├── Middlewares/                    # Custom middlewares
-  └── Program.cs                      # Application entry point
-
-Project.Application/                  # CQRS Commands/Queries, Business logic
-  ├── Features/                       # Feature-based organization
-  │   ├── Auth/                       # Authentication feature
-  │   │   ├── Commands/               # Write operations (Login, Logout, Refresh)
-  │   │   │   ├── Login/
-  │   │   │   ├── Logout/
-  │   │   │   └── Refresh/
-  │   │   ├── Requests/               # Request DTOs
-  │   │   ├── Validators/             # FluentValidation validators
-  │   │   └── Shared/                 # Shared services
-  │   │       ├── Interfaces/
-  │   │       │   └── IAuthWriteService.cs      # Write operations
-  │   │       └── Services/
-  │   │           └── AuthWriteService.cs       # Login, Logout, Refresh logic
-  │   │
-  │   └── Categories/                 # Category CRUD feature
-  │       ├── Commands/               # Write operations
-  │       │   ├── CreateCategory/
-  │       │   ├── UpdateCategory/
-  │       │   └── DeleteCategory/
-  │       ├── Queries/                # Read operations
-  │       │   └── GetById/
-  │       ├── Request/                # Request/Response DTOs
-  │       ├── Validators/             # Validation rules
-  │       └── Shared/                 # Business services
-  │           ├── Interfaces/
-  │           │   ├── ICategoryWriteService.cs      # Write operations (Create, Update, Delete)
-  │           │   └── ICategoryReadService.cs       # Read operations (Get)
-  │           └── Services/
-  │               ├── CategoryWriteService.cs       # Business logic for writes
-  │               └── CategoryReadService.cs        # Business logic for reads
-  │
-  └── Common/                         # Shared application code
-      ├── DTOs/                       # Data Transfer Objects
-      │   └── Emails/                 # Email DTOs (EmailDto)
-      ├── Exceptions/                 # Custom exceptions
-      ├── Interfaces/                 # Common interfaces
-      │   ├── IBackgroundJobs/        # Background job interfaces
-      │   ├── IExternalServices/      # External service interfaces
-      │   │   └── IMailServices/      # Email service interfaces
-      │   └── IServices/              # Application service interfaces
-      └── Mappers/                    # AutoMapper profiles
-
-Project.Infrastructure/               # Data access, external services
-  ├── Data/
-  │   ├── Contexts/                   # DbContext
-  │   ├── Repositories/               # Repository implementations
-  │   └── Migrations/                 # EF Core migrations
-  ├── BackgroundJobs/                 # Background job implementations
-  │   └── HangfireJobService.cs       # Hangfire background service
-  └── ExternalServices/               # External integrations
-      ├── TokenServices/              # JWT service
-      ├── MailServices/               # Email service implementation
-      └── StorageServices/            # File storage
-
-Project.Domain/                       # Core business entities
-  ├── Entities/                       # Domain entities
-  ├── Interfaces/                     # Domain interfaces
-  └── Enums/                          # Enumerations
-
-Project.Common/                       # Cross-cutting concerns
-  ├── Constants/                      # Application constants
-  ├── Models/                         # Common models
-  ├── Options/                        # Configuration options
-  └── Extensions/                     # Extension methods
-
-Project.UnitTest/                     # Unit tests
-  ├── Features/                       # Feature tests
-  │   ├── Auth/                       # Authentication tests
-  │   └── Shared/                     # Shared service tests
-  └── Project.UnitTest.csproj
+Project.API/                    # Controllers, middleware, configuration
+Project.Application/            # CQRS Commands/Queries, Business logic
+  ├── Features/                 # Feature-based organization (Auth, Categories)
+  │   └── */Shared/Services/    # Business logic services
+  └── Common/                   # DTOs, Interfaces, Exceptions
+Project.Infrastructure/         # Data access, external services
+  ├── Data/                     # DbContext, Repositories, Migrations
+  ├── BackgroundJobs/           # Hangfire implementation
+  └── ExternalServices/         # JWT, Email, Storage services
+Project.Domain/                 # Core business entities
+Project.Common/                 # Cross-cutting concerns
+Project.UnitTest/               # Unit tests
 ```
 
-## CQRS Pattern with Write/Read Services
+## CQRS Pattern with Shared Services
 
-This template implements CQRS with **service layer split between Write and Read operations**:
-
-### Architecture Flow
+**Architecture Flow:**
 ```
 Command Handler → Write Service → Repository
 Query Handler   → Read Service  → Repository
 ```
 
-**Key Principles:**
-- **Commands** use `ICategoryWriteService` for create/update/delete operations
-- **Queries** use `ICategoryReadService` for read-only operations
-- Handlers are **thin** (5-10 lines) - orchestration only
-- Services are **fat** - contain all business logic
+**Key Features:**
+- **Thin Handlers**: Only orchestration (5-10 lines)
+- **Fat Services**: All business logic
+- **Write/Read Separation**: Different services for commands vs queries
+- **Email Notifications**: Background jobs for business events
 
-**Benefits:**
-- Clear separation: Write vs Read operations
-- Thin handlers - only delegate to services
-- Services can be optimized independently (WriteService with transactions, ReadService with caching)
-- Easy to test - mock specific Write or Read service
-- Validation logic reusable - no duplication
-- Follows SOLID principles and CQRS pattern strictly
-
-### Example: Create Category Flow (Write Operation)
-
-**1. Request DTO** - Input validation
+**Example Implementation:**
 ```csharp
-// Features/Categories/Request/CreateCategoryRequest.cs
-public class CreateCategoryRequest
+// Thin Handler
+public async Task<CategoryDto> Handle(CreateCategoryCommand request, CancellationToken ct)
 {
-    public string Name { get; set; }
-    public string? Description { get; set; }
+    return await _categoryWriteService.CreateCategoryAsync(request.Request, ct);
 }
-```
 
-**2. Validator** - Request-level validation rules
-```csharp
-// Features/Categories/Validators/CreateCategoryRequestValidator.cs
-public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRequest>
+// Fat Service with Business Logic
+public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryRequest request, CancellationToken ct)
 {
-    public CreateCategoryRequestValidator()
-    {
-        RuleFor(c => c.Name)
-            .NotEmpty().WithMessage("Name is required")
-            .MaximumLength(100);
-    }
-}
-```
-
-**3. Command** - Wraps request for MediatR
-```csharp
-// Features/Categories/Commands/CreateCategory/CreateCategoryCommand.cs
-public record CreateCategoryCommand(CreateCategoryRequest Request) 
-    : IRequest<CategoryDto>;
-```
-
-**4. Handler** - Thin orchestration (3 lines)
-```csharp
-// Features/Categories/Commands/CreateCategory/CreateCategoryCommandHandler.cs
-public class CreateCategoryCommandHandler 
-    : IRequestHandler<CreateCategoryCommand, CategoryDto>
-{
-    private readonly ICategoryWriteService _categoryWriteService;
-    
-    public CreateCategoryCommandHandler(ICategoryWriteService categoryWriteService)
-    {
-        _categoryWriteService = categoryWriteService;
-    }
-
-    public async Task<CategoryDto> Handle(
-        CreateCategoryCommand request, 
-        CancellationToken cancellationToken)
-    {
-        // Handler only delegates - no business logic
-        return await _categoryWriteService.CreateCategoryAsync(
-            request.Request, 
-            cancellationToken);
-    }
-}
-```
-
-**5. Write Service** - Contains all business logic (Create, Update, Delete)
-```csharp
-// Features/Categories/Shared/Services/CategoryWriteService.cs
-public class CategoryWriteService : ICategoryWriteService
-{
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-
-    public CategoryWriteService(IUnitOfWork unitOfWork, IMapper mapper)
-    {
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-    }
-
-    // CREATE operation
-    public async Task<CategoryDto> CreateCategoryAsync(
-        CreateCategoryRequest request, 
-        CancellationToken cancellationToken = default)
-    {
-        // 1. Validation
-        if (await IsValidCategoryNameAsync(request.Name))
-            throw new ValidatorException(
-                nameof(CreateCategoryRequest.Name), 
-                $"Category with name {request.Name} already exists.");
-
-        // 2. Mapping
-        Category category = _mapper.Map<Category>(request);
-        
-        // 3. Persistence
-        await _unitOfWork.CategoryRepository.CreateAsync(category, cancellationToken);
-        
-        // 4. Send notification email (background job)
-        SendNotificationEmailAsync(category.Name,
-            await GetUserByIdAsync(_currentUserService.UserId.ToString() ?? string.Empty),
-            cancellationToken);
-        
-        // 5. Return DTO
-        return _mapper.Map<CategoryDto>(category);
-    }
-
-    // UPDATE operation
-    public async Task<CategoryDto> UpdateCategoryAsync(
-        int id,
-        UpdateCategoryRequest request, 
-        CancellationToken cancellationToken = default)
-    {
-        // 1. Validation - check name unique for other categories
-        if (await IsValidCategoryNameAsync(id, request.Name, cancellationToken))
-            throw new ValidatorException(
-                nameof(UpdateCategoryRequest.Name), 
-                $"Category with name {request.Name} already exists.");
-
-        // 2. Get existing category
-        Category category = await GetCategoryByIdAsync(id, cancellationToken);
-
-        // 3. Map new values
-        _mapper.Map(request, category);
-
-        // 4. Persistence
-        await _unitOfWork.CategoryRepository.UpdateAsync(category, cancellationToken);
-
-        // 5. Return DTO
-        return _mapper.Map<CategoryDto>(category);
-    }
-
-    // DELETE operation
-    public async Task<bool> DeleteCategoryAsync(
-        int id, 
-        CancellationToken cancellationToken = default)
-    {
-        Category category = await GetCategoryByIdAsync(id, cancellationToken);
-        await _unitOfWork.CategoryRepository.DeleteAsync(category, cancellationToken);
-        return true;
-    }
-
-    // UPDATE DESCRIPTION operation
-    public async Task<CategoryDto> UpdateDescriptionCategoryAsync(
-        int id,
-        string description, 
-        CancellationToken cancellationToken = default)
-    {
-        Category category = await GetCategoryByIdAsync(id, cancellationToken);
-        category.SetDescription(description);
-        await _unitOfWork.CategoryRepository.UpdateAsync(category, cancellationToken);
-        return _mapper.Map<CategoryDto>(category);
-    }
-
-    // Helper methods
-    private async Task<Category> GetCategoryByIdAsync(
-        int id, 
-        CancellationToken cancellation = default)
-    {
-        return await _unitOfWork.CategoryRepository.GetByIdAsync(id, cancellation)
-            ?? throw new NotFoundException($"Category with ID {id} not found.");
-    }
-
-    private async Task<bool> IsValidCategoryNameAsync(string name)
-    {
-        return await _unitOfWork.CategoryRepository
-            .IsExistsAsync(nameof(Category.Name), name);
-    }
-
-    private async Task<bool> IsValidCategoryNameAsync(
-        int id, 
-        string name, 
-        CancellationToken cancellation = default)
-    {
-        return await _unitOfWork.CategoryRepository.IsExistsForUpdateAsync(
-            id, nameof(Category.Name), name, cancellation);
-    }
-
-    // Email notification helper
-    private void SendNotificationEmailAsync(string categoryName, User user, CancellationToken cancellation = default)
-    {
-        EmailDto email = new EmailDto
-        {
-            To = user.Email ?? string.Empty,
-            Subject = $"[Notification] New Category Created: {categoryName}",
-            TemplateName = "CategoryCreated",
-            TemplateData = new Dictionary<string, string>
-            {
-                { "AdminName", user.FullName ?? "Admin" },
-                { "CategoryName", categoryName },
-                { "CreatedDate", DateTime.Now.ToString("dd/MM/yyyy HH:mm") }
-            }
-        };
-
-        _backgroundJob.EnqueueSendEmail(email);
-    }
-}
-```
-
-### Example: Get Category Flow (Read Operation)
-
-**1. Query** - Wraps request
-```csharp
-// Features/Categories/Queries/GetById/GetCategoryByIdQuery.cs
-public record GetCategoryByIdQuery(int Id) : IRequest<CategoryDto>;
-```
-
-**2. Query Handler** - Thin orchestration
-```csharp
-// Features/Categories/Queries/GetById/GetByIdQueryHandler.cs
-public class GetCategoryByIdQueryHandler 
-    : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
-{
-    private readonly ICategoryReadService _categoryReadService;
-    
-    public GetCategoryByIdQueryHandler(ICategoryReadService categoryReadService)
-    {
-        _categoryReadService = categoryReadService;
-    }
-
-    public async Task<CategoryDto> Handle(
-        GetCategoryByIdQuery query, 
-        CancellationToken cancellationToken)
-    {
-        // Handler delegates to read service
-        return await _categoryReadService.GetByIdAsync(
-            query.Id, 
-            cancellationToken);
-    }
-}
-```
-
-**3. Read Service** - Optimized for queries
-```csharp
-// Features/Categories/Shared/Services/CategoryReadService.cs
-public class CategoryReadService : ICategoryReadService
-{
-    private readonly IUnitOfWork _unitOfWork;
-
-    public async Task<CategoryDto> GetByIdAsync(
-        int id, 
-        CancellationToken cancellationToken)
-    {
-        return await _unitOfWork.CategoryRepository.GetOneUntrackedAsync(
-            filter: c => c.Id == id && !c.IsDeleted,
-            selector: c => new CategoryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description
-            },
-            cancellation: cancellationToken) 
-            ?? throw new NotFoundException($"Category {id} not found");
-    }
-}
-```
-
-    private async Task<bool> IsValidCategoryNameAsync(string name)
-    {
-        return await _unitOfWork.CategoryRepository
-            .IsExistsAsync(nameof(Category.Name), name);
-    }
-}
-```
-
-**6. Controller** - API endpoint
-```csharp
-// Controllers/V1/CategoriesController.cs
-[HttpPost]
-public async Task<IActionResult> CreateCategoryAsync(
-    [FromBody] CreateCategoryRequest request,
-    CancellationToken cancellationToken)
-{
-    var result = await _sender.Send(
-        new CreateCategoryCommand(request), 
-        cancellationToken);
-
-    return Ok(new ApiResponse<CategoryDto>
-    {
-        Success = true,
-        Message = "Category created successfully",
-        Data = result
-    });
+    // Validation, mapping, persistence, email notification
+    var category = _mapper.Map<Category>(request);
+    await _unitOfWork.CategoryRepository.CreateAsync(category, ct);
+    _backgroundJob.EnqueueSendEmail(emailDto); // Background notification
+    return _mapper.Map<CategoryDto>(category);
 }
 ```
 
@@ -555,161 +220,44 @@ API available at:
 
 ## Background Jobs & Email System
 
-This template includes a comprehensive background job system with email notifications:
+**Hangfire Integration:**
+- Background job processing with SQL Server storage
+- Dashboard: `/hangfire` endpoint
+- Automatic retry on failures
 
-### Hangfire Integration
+**Email Service:**
+- SMTP with MailKit library  
+- HTML templates for notifications
+- Background job queue for async sending
+- Automatic notifications on category creation
 
-**Hangfire Configuration:**
-- **Database**: Separate SQL Server database for Hangfire storage
-- **Dashboard**: Available at `/hangfire` endpoint
-- **Processing**: Automatic background job processing
-- **Retry**: Built-in failure retry mechanism
-
-**Setup in Program.cs:**
+**Example Usage:**
 ```csharp
-builder.Services.AddCustomHangfire(builder.Configuration);
-app.UseHangfireDashboard("/hangfire");
-```
-
-### Email Service Architecture
-
-**Interface Layer (Application/Common/Interfaces):**
-```csharp
-// IMailService.cs - Email sending interface
-public interface IMailService
+_backgroundJob.EnqueueSendEmail(new EmailDto 
 {
-    Task SendEmailAsync(EmailDto email, CancellationToken cancellation = default);
-}
-
-// IBackgroundJobService.cs - Background job interface  
-public interface IBackgroundJobService
-{
-    void EnqueueSendEmail(EmailDto email);
-}
-```
-
-**Implementation Layer (Infrastructure):**
-```csharp
-// MailService.cs - SMTP email implementation
-public class MailService : IMailService
-{
-    private readonly EmailSettings _emailSettings;
-    
-    public async Task SendEmailAsync(EmailDto email, CancellationToken cancellation = default)
-    {
-        // HTML template rendering
-        // SMTP client setup (MailKit)
-        // Email sending with attachments support
-    }
-}
-
-// HangfireJobService.cs - Background job implementation
-public class HangfireJobService : IBackgroundJobService
-{
-    public void EnqueueSendEmail(EmailDto email)
-    {
-        BackgroundJob.Enqueue<IMailService>(job => job.SendEmailAsync(email));
-    }
-}
-```
-
-### Email Templates
-
-**Built-in Templates:**
-- **CategoryCreated**: Professional HTML template for category creation notifications
-
-**Template Features:**
-- Responsive HTML design
-- Dynamic placeholder replacement
-- Professional styling with company branding
-- Support for custom template data
-
-**Example Template Usage:**
-```csharp
-EmailDto email = new EmailDto
-{
-    To = user.Email,
-    Subject = "[Notification] New Category Created: Electronics",
+    To = "user@example.com",
+    Subject = "Category Created",
     TemplateName = "CategoryCreated",
-    TemplateData = new Dictionary<string, string>
+    TemplateData = new Dictionary<string, string> 
     {
-        { "AdminName", "John Doe" },
         { "CategoryName", "Electronics" },
-        { "CreatedDate", "08/01/2026 14:30" }
+        { "CreatedDate", DateTime.Now.ToString() }
     }
-};
-
-_backgroundJob.EnqueueSendEmail(email);
-```
-
-### Business Event Notifications
-
-**Automated Notifications:**
-- **Category Creation**: Email notification to admin user
-- **Asynchronous Processing**: Non-blocking background execution
-- **Failure Handling**: Automatic retry on email delivery failures
-
-**Integration Example:**
-```csharp
-public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryRequest request, ...)
-{
-    // 1. Business logic
-    Category category = _mapper.Map<Category>(request);
-    await _unitOfWork.CategoryRepository.CreateAsync(category, cancellationToken);
-    
-    // 2. Queue email notification
-    SendNotificationEmailAsync(category.Name, currentUser, cancellationToken);
-    
-    return _mapper.Map<CategoryDto>(category);
-}
-
-private void SendNotificationEmailAsync(string categoryName, User user, ...)
-{
-    _backgroundJob.EnqueueSendEmail(new EmailDto { /* email data */ });
-}
+});
 ```
 
 ## Caching Strategy
 
-The template implements **in-memory caching** for optimized read operations:
+In-memory caching for read operations with automatic invalidation:
 
-### Implementation Details
-
-**Cache Integration in Controllers:**
 ```csharp
-[HttpGet("{id:int}")]
-public async Task<IActionResult> GetCategoryByIdAsync([FromRoute] int id)
-{
-    var result = new CategoryDto();
+// Cache on GET, invalidate on PUT/DELETE
+if (_cache.TryGetValue($"Category_{id}", out CategoryDto? cached))
+    return cached;
 
-    // Try to get from cache first
-    if (_cache.TryGetValue($"Category_{id}", out CategoryDto? category))
-    {
-        result = category;
-    }
-    else
-    {
-        // If not in cache, query database
-        result = await _sender.Send(new GetCategoryByIdQuery(id));
-
-        // Cache the result for 10 minutes
-        if (result != null)
-            _cache.Set($"Category_{id}", result, TimeSpan.FromMinutes(10));
-    }
-
-    return Ok(new ApiResponse<CategoryDto> { Data = result });
-}
+result = await _sender.Send(new GetCategoryByIdQuery(id));
+_cache.Set($"Category_{id}", result, TimeSpan.FromMinutes(10));
 ```
-
-**Cache Invalidation:**
-- **Update Operations**: Remove cache on PUT/PATCH operations
-- **Delete Operations**: Remove cache on DELETE operations
-- **Time-based Expiry**: 10 minutes TTL for cached entries
-
-**Benefits:**
-- Reduced database queries for frequently accessed data
-- Improved response times for read operations
-- Automatic cache invalidation on data modifications
 
 ## API Endpoints
 
@@ -931,140 +479,26 @@ public class ProductsController : ControllerBase
 
 ## Technology Stack
 
-### Core Framework
-- **.NET 10.0** - Target framework
-- **ASP.NET Core** - Web API framework
-
-### Data Access
-- **Entity Framework Core 9.0.7** - ORM
-- **Microsoft.EntityFrameworkCore.SqlServer 9.0.7** - SQL Server provider
-- **Microsoft.EntityFrameworkCore.Design 9.0.8** - EF Core design-time tools
-
-### CQRS & Messaging
-- **MediatR 13.1.0** - CQRS mediator pattern implementation
-- **MediatR.Extensions.Microsoft.DependencyInjection 11.1.0** - DI integration
-
-### Validation & Mapping
-- **FluentValidation 12.0.0** - Fluent validation rules
-- **FluentValidation.AspNetCore 11.3.1** - ASP.NET Core integration
-- **AutoMapper 14.0.0** - Object-to-object mapping
-
-### Authentication & Security
-- **ASP.NET Core Identity 8.0.18** - User management
-- **Microsoft.AspNetCore.Authentication.JwtBearer 8.0.18** - JWT authentication
-- **System.IdentityModel.Tokens.Jwt 8.13.1** - JWT token handling
-
-### API Features
-- **Swashbuckle.AspNetCore 6.6.2** - Swagger/OpenAPI documentation
-- **Microsoft.AspNetCore.Mvc.Versioning 5.1.0** - API versioning
-- **Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer 5.1.0** - API version explorer
-
-### Background Jobs & Email
-- **Hangfire 1.8.19** - Background job processing
-- **Hangfire.SqlServer 1.8.19** - SQL Server storage for Hangfire
-- **MailKit 4.9.0** - SMTP email client library
-- **MimeKit 4.9.0** - MIME message construction
-
-### Database
-- **SQL Server** - Production database
-
-### Testing
-- **xUnit 2.5.3** - Unit testing framework
-- **NSubstitute 5.3.0** - Mocking library for unit tests
-- **AutoFixture 4.18.1** - Test data generation
-- **Microsoft.NET.Test.Sdk 17.8.0** - Test SDK
-- **coverlet.collector 6.0.0** - Code coverage
+**Framework:** .NET 10, ASP.NET Core  
+**Data:** Entity Framework Core 9.0.7, SQL Server  
+**CQRS:** MediatR 13.1.0  
+**Validation:** FluentValidation 12.0.0  
+**Mapping:** AutoMapper 14.0.0  
+**Authentication:** JWT Bearer, ASP.NET Core Identity  
+**Background Jobs:** Hangfire 1.8.19  
+**Email:** MailKit 4.9.0, MimeKit 4.9.0  
+**Testing:** xUnit, NSubstitute, AutoFixture
 
 ## Unit Testing
 
-This project includes comprehensive unit tests for business logic layer (Shared Services).
+**Focus:** Business logic in Shared Services  
+**Tools:** xUnit, NSubstitute (mocking), AutoFixture (test data)  
+**Coverage:** Authentication and Category services
 
-### Testing Stack
-
-| Library | Purpose |
-|---------|----------|
-| **xUnit** | Unit testing framework |
-| **NSubstitute** | Mocking dependencies (repositories, external services) |
-| **AutoFixture** | Automatic test data generation |
-| **coverlet** | Code coverage collection |
-
-### Test Structure
-
-```
-Project.UnitTest/
-├── Features/
-│   ├── Auth/
-│   │   └── AuthWriteServiceTests.cs           # Authentication service tests
-│   └── Shared/
-│       └── CategoryWriteServiceTests.cs       # Category service tests
-└── Project.UnitTest.csproj
-```
-
-### Testing Approach
-
-**Service Layer Testing** - Focus on testing business logic in Shared Services:
-- Mock dependencies using NSubstitute
-- Generate test data with AutoFixture
-- Verify business logic execution
-- Assert expected outcomes
-- Validate repository interactions
-
-**Test Naming Convention:**
-```
-MethodName_WhenCondition_ShouldExpectedBehavior
-```
-
-**Example Test:**
-```csharp
-[Fact]
-public async Task CreateCategoryAsync_WhenRequestIsValid_ShouldCreateCategory()
-{
-    CreateCategoryRequest request = _fixture.Create<CreateCategoryRequest>();
-    
-    _unitOfWork.CategoryRepository.IsExistsAsync(nameof(Category.Name), request.Name, Arg.Any<CancellationToken>())
-        .Returns(false);
-    
-    _unitOfWork.CategoryRepository.CreateAsync(Arg.Any<Category>(), Arg.Any<CancellationToken>())
-        .Returns(ci => ci.ArgAt<Category>(0));
-    
-    CategoryDto result = await _categoryWriteService.CreateCategoryAsync(request);
-    
-    Assert.NotNull(result);
-    Assert.Equal(request.Name, result.Name);
-    
-    await _unitOfWork.CategoryRepository.Received(1)
-        .CreateAsync(Arg.Is<Category>(c => c.Name == request.Name), Arg.Any<CancellationToken>());
-}
-```
-
-### Running Tests
-
-**Run all tests:**
 ```bash
-dotnet test
+dotnet test                                    # Run all tests
+dotnet test /p:CollectCoverage=true           # With coverage
 ```
-
-**Run with coverage:**
-```bash
-dotnet test /p:CollectCoverage=true
-```
-
-**Run specific test class:**
-```bash
-dotnet test --filter "FullyQualifiedName~CategoryWriteServiceTests"
-```
-
-### Test Coverage
-
-**Current Coverage:**
-- AuthWriteService - LoginAsync, LogoutAsync, RefreshAsync
-- CategoryWriteService - CreateAsync, UpdateAsync, UpdateDescriptionAsync, DeleteAsync
-
-**Tested Scenarios:**
-- Happy path (valid inputs, successful operations)
-- Exception handling (validation errors, not found, business rule violations)
-- Transaction management (begin, commit, rollback)
-- Repository interactions verification
 
 
 

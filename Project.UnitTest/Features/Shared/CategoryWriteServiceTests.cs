@@ -2,6 +2,7 @@
 using AutoMapper;
 using NSubstitute;
 using Project.Application.Common.DTOs.Categories;
+using Project.Application.Common.Interfaces.IBackgroundJobs;
 using Project.Application.Common.Mappers;
 using Project.Application.Features.Categories.Request;
 using Project.Application.Features.Categories.Shared.Interfaces;
@@ -16,6 +17,7 @@ namespace Project.UnitTest.Features.Shared
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICategoryWriteService _categoryWriteService;
         private readonly IMapper _mapper;
+        private readonly IBackgroundJobService _backgroundJobService;
         private readonly Fixture _fixture;
 
         public CategoryWriteServiceTests()
