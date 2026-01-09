@@ -88,7 +88,7 @@ namespace Project.UnitTest.Features.Shared
                 .EnqueueSendEmail(Arg.Do<EmailDto>(e =>
                 {
                     Assert.Equal("CategoryCreated", e.TemplateName);
-                    Assert.Equal(request.Name, e.TemplateData["CategoryName"]);
+                    Assert.Equal(request.Name, e.TemplateData?["CategoryName"]);
                 }));
         }
 
