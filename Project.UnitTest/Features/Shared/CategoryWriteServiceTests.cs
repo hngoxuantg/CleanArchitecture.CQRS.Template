@@ -1,13 +1,17 @@
 ﻿using AutoFixture;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using Project.Application.Common.DTOs.Categories;
+using Project.Application.Common.DTOs.Mails;
 using Project.Application.Common.Interfaces.IBackgroundJobs;
+using Project.Application.Common.Interfaces.IServices;
 using Project.Application.Common.Mappers;
 using Project.Application.Features.Categories.Request;
 using Project.Application.Features.Categories.Shared.Interfaces;
 using Project.Application.Features.Categories.Shared.Services;
 using Project.Domain.Entities.Business;
+using Project.Domain.Entities.Identity_Auth;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 
 namespace Project.UnitTest.Features.Shared
@@ -18,6 +22,8 @@ namespace Project.UnitTest.Features.Shared
         private readonly ICategoryWriteService _categoryWriteService;
         private readonly IMapper _mapper;
         private readonly IBackgroundJobService _backgroundJobService;
+        private readonly UserManager<User> _userManager;
+        private readonly ICurrentUserService _currentUserService;
         private readonly Fixture _fixture;
 
         public CategoryWriteServiceTests()
@@ -31,16 +37,29 @@ namespace Project.UnitTest.Features.Shared
 
             _mapper = config.CreateMapper();
 
+            _backgroundJobService = Substitute.For<IBackgroundJobService>();
+
+            IUserStore<User> userStore = Substitute.For<IUserStore<User>>();
+            _userManager = Substitute.For<UserManager<User>>(
+                userStore, null, null, null, null, null, null, null, null);
+
+            _currentUserService = Substitute.For<ICurrentUserService>();
+
             _fixture = new Fixture();
 
             _categoryWriteService = new CategoryWriteService(
                 _unitOfWork,
+                _backgroundJobService,
+                _userManager,
+                _currentUserService,
                 _mapper);
         }
 
         [Fact]
         public async Task CreateCategoryAsync_WhenRequestIsValid_ShouldCreateCategory()
         {
+            int userId = _fixture.Create<int>();
+
             CreateCategoryRequest request = _fixture.Create<CreateCategoryRequest>();
 
             _unitOfWork.CategoryRepository.IsExistsAsync(nameof(Category.Name), request.Name, Arg.Any<CancellationToken>())
@@ -49,6 +68,11 @@ namespace Project.UnitTest.Features.Shared
             _unitOfWork.CategoryRepository.CreateAsync(Arg.Any<Category>(), Arg.Any<CancellationToken>())
                 .Returns(ci => ci.ArgAt<Category>(0));
 
+            _currentUserService.UserId.Returns(userId);
+
+            _userManager.FindByIdAsync(userId.ToString())
+                .Returns(_fixture.Create<User>());
+
             CategoryDto result = await _categoryWriteService.CreateCategoryAsync(request);
 
             Assert.NotNull(result);
@@ -56,6 +80,16 @@ namespace Project.UnitTest.Features.Shared
 
             await _unitOfWork.CategoryRepository.Received(1)
                 .CreateAsync(Arg.Is<Category>(c => c.Name == request.Name), Arg.Any<CancellationToken>());
+
+            await _userManager.Received(1)
+                .FindByIdAsync(userId.ToString());
+
+            _backgroundJobService.Received(1)
+                .EnqueueSendEmail(Arg.Do<EmailDto>(e =>
+                {
+                    Assert.Equal("CategoryCreated", e.TemplateName);
+                    Assert.Equal(request.Name, e.TemplateData["CategoryName"]);
+                }));
         }
 
         [Fact]

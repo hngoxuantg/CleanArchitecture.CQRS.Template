@@ -39,7 +39,7 @@ namespace Project.Application.Features.Categories.Shared.Services
             CreateCategoryRequest request,
             CancellationToken cancellationToken = default)
         {
-            if (await IsValidCategoryNameAsync(request.Name))
+            if (await IsValidCategoryNameAsync(request.Name, cancellationToken))
                 throw new ValidatorException(
                     nameof(CreateCategoryRequest.Name), $"Category with name {request.Name} already exists.");
 
@@ -101,9 +101,9 @@ namespace Project.Application.Features.Categories.Shared.Services
                 ?? throw new NotFoundException($"Category with ID {id} not found.");
         }
 
-        private async Task<bool> IsValidCategoryNameAsync(string name)
+        private async Task<bool> IsValidCategoryNameAsync(string name, CancellationToken cancellation = default)
         {
-            return await _unitOfWork.CategoryRepository.IsExistsAsync(nameof(Category.Name), name);
+            return await _unitOfWork.CategoryRepository.IsExistsAsync(nameof(Category.Name), name, cancellation);
         }
 
         private async Task<bool> IsValidCategoryNameAsync(int id, string name, CancellationToken cancellation = default)
