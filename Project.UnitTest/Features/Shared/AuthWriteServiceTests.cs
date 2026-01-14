@@ -8,6 +8,7 @@ using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
 using Project.Application.Common.Interfaces.IServices;
 using Project.Application.Features.Auth.Requests;
+using Project.Application.Features.Auth.Shared.Interfaces;
 using Project.Application.Features.Auth.Shared.Services;
 using Project.Common.Options;
 using Project.Domain.Entities.Identity_Auth;
@@ -24,7 +25,7 @@ namespace Project.UnitTest.Features.Auth
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IOptions<AppSettings> _appSettings;
         private readonly Fixture _fixture;
-        private readonly AuthWriteService _authWriteService;
+        private readonly IAuthWriteService _authWriteService;
 
         public AuthWriteServiceTests()
         {
