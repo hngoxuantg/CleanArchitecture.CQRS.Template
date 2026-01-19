@@ -52,7 +52,7 @@ namespace Project.API.Controllers.V1
                 AccessToken = result.AccessToken
             });
         }
- 
+
         [EnableRateLimiting(RateLimitPolicies.PerUser)]
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync(CancellationToken cancellationToken = default)
