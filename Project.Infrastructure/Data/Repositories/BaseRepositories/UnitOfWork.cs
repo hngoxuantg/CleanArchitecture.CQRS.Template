@@ -33,14 +33,17 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
         public IProductRepository ProductRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }
         public IAuditLogRepository AuditLogRepository { get; }
+
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _dbContext.SaveChangesAsync(cancellationToken);
         }
+
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             _transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         }
+
         public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_transaction != null)
@@ -50,6 +53,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
                 _transaction = null;
             }
         }
+
         public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_transaction != null)

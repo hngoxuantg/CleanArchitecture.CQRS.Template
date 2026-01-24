@@ -9,6 +9,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class, IAggregateRoot
     {
         protected readonly ApplicationDbContext _dbContext;
+
         public BaseRepository(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
