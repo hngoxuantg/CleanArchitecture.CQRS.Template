@@ -10,4 +10,3 @@
         public const string DatabaseError = "Database error occurred.";
     }
 }
-
