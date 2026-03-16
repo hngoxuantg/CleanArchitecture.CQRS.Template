@@ -43,7 +43,7 @@ namespace Project.Infrastructure.Data.Contexts
         {
             int? userId = _currentUser.UserId;
 
-            var entries = ChangeTracker.Entries()
+            IEnumerable<EntityEntry> entries = ChangeTracker.Entries()
                 .Where(e => e.Entity is BaseEntity && (
                     e.State == EntityState.Added ||
                     e.State == EntityState.Modified ||
