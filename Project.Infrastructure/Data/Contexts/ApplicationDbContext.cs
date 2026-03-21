@@ -15,16 +15,13 @@ namespace Project.Infrastructure.Data.Contexts
     {
         private readonly ICurrentUserService _currentUser;
         private readonly ILogger<ApplicationDbContext> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
             ICurrentUserService currentUser,
-            ILogger<ApplicationDbContext> logger,
-            IHttpContextAccessor httpContextAccessor) : base(options)
+            ILogger<ApplicationDbContext> logger) : base(options)
         {
             _currentUser = currentUser;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
         }
         #region DbSet Section
         public DbSet<Role> Roles { get; set; }
@@ -120,11 +117,11 @@ namespace Project.Infrastructure.Data.Contexts
                 Action = action,
                 EntityType = entity.GetType().Name,
                 EntityId = entity.Id,
-                IPAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString(),
-                CorrelationId = _httpContextAccessor.HttpContext?.TraceIdentifier,
+                IPAddress = _currentUser.IpAddress,
+                UserAgent = _currentUser.DeviceInfo,
+                CorrelationId = _currentUser.CorrelationId,
                 Source = "EFCore",
-                RequestPath = _httpContextAccessor.HttpContext?.Request?.Path,
+                RequestPath = _currentUser.RequestPath,
             });
         }
     }

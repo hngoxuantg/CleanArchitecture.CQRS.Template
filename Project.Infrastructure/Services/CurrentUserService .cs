@@ -29,6 +29,12 @@ namespace Project.Infrastructure.Services
         public string? DeviceInfo =>
             _httpContextAccessor.HttpContext?.Request?.Headers["User-Agent"].ToString();
 
+        public string? CorrelationId =>
+            _httpContextAccessor.HttpContext?.TraceIdentifier;
+
+        public string? RequestPath =>
+            _httpContextAccessor.HttpContext?.Request?.Path;
+
         public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
         public IEnumerable<string> Roles =>
