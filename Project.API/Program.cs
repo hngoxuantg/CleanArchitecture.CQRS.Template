@@ -35,7 +35,7 @@ builder.Services.AddAuthorization();
 #endregion
 
 #region AutoMapper Services
-builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(UserProfile).Assembly));
 #endregion
 
 #region MediatR

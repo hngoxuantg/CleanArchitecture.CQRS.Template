@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Common.DTOs.Mails;
@@ -33,7 +34,7 @@ namespace Project.UnitTest.Features.Shared
             MapperConfiguration config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<CategoryProfile>();
-            });
+            }, new LoggerFactory());
 
             _mapper = config.CreateMapper();
 
