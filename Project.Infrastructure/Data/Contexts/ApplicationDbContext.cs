@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
@@ -39,7 +38,7 @@ namespace Project.Infrastructure.Data.Contexts
             base.OnModelCreating(builder);
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
-        
+
         public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
         {
             int? userId = _currentUser.UserId;
