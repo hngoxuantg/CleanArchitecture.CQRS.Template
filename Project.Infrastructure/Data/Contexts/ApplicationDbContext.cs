@@ -15,6 +15,7 @@ namespace Project.Infrastructure.Data.Contexts
     {
         private readonly ICurrentUserService _currentUser;
         private readonly ILogger<ApplicationDbContext> _logger;
+
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
             ICurrentUserService currentUser,
@@ -23,6 +24,7 @@ namespace Project.Infrastructure.Data.Contexts
             _currentUser = currentUser;
             _logger = logger;
         }
+
         #region DbSet Section
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
@@ -31,11 +33,13 @@ namespace Project.Infrastructure.Data.Contexts
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         #endregion
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
+        
         public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
         {
             int? userId = _currentUser.UserId;
