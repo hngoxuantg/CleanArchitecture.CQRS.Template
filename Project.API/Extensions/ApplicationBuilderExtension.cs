@@ -8,13 +8,20 @@ namespace Project.API.Extensions
     {
         public static async Task<IApplicationBuilder> UseDatabaseInitialization(this IApplicationBuilder app)
         {
-            using var scope = app.ApplicationServices.CreateScope();
+            await using AsyncServiceScope scope = app.ApplicationServices.CreateAsyncScope();
 
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            IEnumerable<string> appliedMigrations = await db.Database.GetAppliedMigrationsAsync();
+            bool isFirstTime = !appliedMigrations.Any();
+
             await db.Database.MigrateAsync();
 
-            var seedingService = scope.ServiceProvider.GetRequiredService<IDataSeedingService>();
-            await seedingService.SeedDataAsync();
+            if (isFirstTime)
+            {
+                IDataSeedingService seedingService = scope.ServiceProvider.GetRequiredService<IDataSeedingService>();
+                await seedingService.SeedDataAsync();
+            }
 
             return app;
         }
