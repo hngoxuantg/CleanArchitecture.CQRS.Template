@@ -24,7 +24,7 @@ namespace Project.API.Extensions
 
         private static OpenApiInfo CreateInfoForApiVersion(ApiVersionDescription description)
         {
-            var info = new OpenApiInfo()
+            OpenApiInfo info = new OpenApiInfo()
             {
                 Title = "Web API Project",
                 Version = description.ApiVersion.ToString(),
