@@ -69,10 +69,5 @@ namespace Project.API.Extensions
             services.AddScoped<IDataSeedingService, DataSeedingService>();
             return services;
         }
-
-        public static IServiceCollection RegisterValidator(IServiceCollection services)
-        {
-            return services;
-        }
     }
 }
