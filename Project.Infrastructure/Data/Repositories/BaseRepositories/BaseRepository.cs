@@ -58,11 +58,11 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
                 .FirstOrDefault()?
                 .Name;
 
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var property = Expression.Property(parameter, keyProperty);
-            var constant = Expression.Constant(id);
-            var equality = Expression.Equal(property, constant);
-            var lamda = Expression.Lambda<Func<T, bool>>(equality, parameter);
+            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
+            MemberExpression property = Expression.Property(parameter, keyProperty);
+            ConstantExpression constant = Expression.Constant(id);
+            BinaryExpression equality = Expression.Equal(property, constant);
+            Expression<Func<T, bool>> lamda = Expression.Lambda<Func<T, bool>>(equality, parameter);
 
             IQueryable<T> query = _dbContext.Set<T>();
 
@@ -164,7 +164,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
 
             query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-            var result = await query.Select(selector).ToListAsync(cancellationToken);
+            IEnumerable<TResult> result = await query.Select(selector).ToListAsync(cancellationToken);
 
             return (result, count);
         }
@@ -234,11 +234,11 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             TValue value,
             CancellationToken cancellation = default)
         {
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var property = Expression.Property(parameter, key);
-            var constant = Expression.Constant(value);
-            var equality = Expression.Equal(property, constant);
-            var lamda = Expression.Lambda<Func<T, bool>>(equality, parameter);
+            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
+            MemberExpression property = Expression.Property(parameter, key);
+            ConstantExpression constant = Expression.Constant(value);
+            BinaryExpression equality = Expression.Equal(property, constant);
+            Expression<Func<T, bool>> lamda = Expression.Lambda<Func<T, bool>>(equality, parameter);
 
             return await _dbContext.Set<T>().AnyAsync(lamda, cancellation);
         }
@@ -256,16 +256,16 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
                 .FirstOrDefault()?
                 .Name;
 
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var property = Expression.Property(parameter, key);
-            var constant = Expression.Constant(value);
-            var equality = Expression.Equal(property, constant);
+            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
+            MemberExpression property = Expression.Property(parameter, key);
+            ConstantExpression constant = Expression.Constant(value);
+            BinaryExpression equality = Expression.Equal(property, constant);
 
-            var idProperty = Expression.Property(parameter, idPrimary ?? "Id");
-            var idEquality = Expression.NotEqual(idProperty, Expression.Constant(id));
+            MemberExpression idProperty = Expression.Property(parameter, idPrimary ?? "Id");
+            BinaryExpression idEquality = Expression.NotEqual(idProperty, Expression.Constant(id));
 
-            var combinedExpression = Expression.AndAlso(equality, idEquality);
-            var lamda = Expression.Lambda<Func<T, bool>>(combinedExpression, parameter);
+            BinaryExpression combinedExpression = Expression.AndAlso(equality, idEquality);
+            Expression<Func<T, bool>> lamda = Expression.Lambda<Func<T, bool>>(combinedExpression, parameter);
 
             return await _dbContext.Set<T>().AnyAsync(lamda, cancellation);
         }
