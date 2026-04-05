@@ -19,12 +19,12 @@ namespace Project.Infrastructure.ExternalServices.TokenServices
         public string GenerateJwtToken(User user, IList<string> roles)
         {
             JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
-            byte[] key = Encoding.ASCII.GetBytes(_appSettings.JwtConfig.Secret);
+            byte[] key = Encoding.ASCII.GetBytes(_appSettings?.JwtConfig?.Secret ?? string.Empty);
 
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(JwtRegisteredClaimNames.Aud, _appSettings.JwtConfig.ValidAudience),
-                new Claim(JwtRegisteredClaimNames.Iss, _appSettings.JwtConfig.ValidIssuer),
+                new Claim(JwtRegisteredClaimNames.Aud, _appSettings?.JwtConfig?.ValidAudience ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Iss, _appSettings?.JwtConfig?.ValidIssuer ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
@@ -36,7 +36,7 @@ namespace Project.Infrastructure.ExternalServices.TokenServices
             SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_appSettings.JwtConfig.TokenExpirationMinutes)),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_appSettings?.JwtConfig?.TokenExpirationMinutes)),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
