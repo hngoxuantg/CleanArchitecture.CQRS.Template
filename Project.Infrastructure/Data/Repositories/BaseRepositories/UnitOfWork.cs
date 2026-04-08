@@ -11,6 +11,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
     {
         private readonly ApplicationDbContext _dbContext;
         private IDbContextTransaction? _transaction;
+        
         public UnitOfWork(IRoleRepository roleRepository,
             IUserRepository userRepository,
             ICategoryRepository categoryRepository,
@@ -27,6 +28,7 @@ namespace Project.Infrastructure.Data.Repositories.BaseRepositories
             AuditLogRepository = auditLogRepository;
             _dbContext = dbContext;
         }
+
         public IRoleRepository RoleRepository { get; }
         public IUserRepository UserRepository { get; }
         public ICategoryRepository CategoryRepository { get; }
