@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Caching.Memory;
 using Project.Application.Common.DTOs.Categories;
+using Project.Application.Common.Interfaces.IExternalServices.ICacheServices;
 using Project.Application.Features.Categories.Commands;
 using Project.Application.Features.Categories.Commands.UpdateDescriptionCategory;
 using Project.Application.Features.Categories.Queries.GetById;
@@ -21,9 +21,9 @@ namespace Project.API.Controllers.V1
     public class CategoriesController : ControllerBase
     {
         private readonly ISender _sender;
-        private readonly IMemoryCache _cache;
+        private readonly ICacheService _cache;
 
-        public CategoriesController(ISender sender, IMemoryCache cache)
+        public CategoriesController(ISender sender, ICacheService cache)
         {
             _sender = sender;
             _cache = cache;
@@ -50,11 +50,11 @@ namespace Project.API.Controllers.V1
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCategoryByIdAsync([FromRoute] int id)
         {
-            var result = new CategoryDto();
+            CategoryDto? result;
 
-            if (_cache.TryGetValue($"Category_{id}", out CategoryDto? category))
+            if (_cache.Exists($"Category_{id}"))
             {
-                result = category;
+                result = _cache.Get<CategoryDto>($"Category_{id}");
             }
             else
             {

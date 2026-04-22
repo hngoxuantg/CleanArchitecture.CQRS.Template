@@ -1,5 +1,6 @@
 ﻿using Project.Application.Common.Interfaces.IBackgroundJobs;
 using Project.Application.Common.Interfaces.IDataSeedingServices;
+using Project.Application.Common.Interfaces.IExternalServices.ICacheServices;
 using Project.Application.Common.Interfaces.IExternalServices.IMailServices;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
 using Project.Application.Common.Interfaces.IExternalServices.ITokenServices;
@@ -18,6 +19,7 @@ using Project.Infrastructure.Data.Repositories.BaseRepositories;
 using Project.Infrastructure.Data.Repositories.BusinessRepositories;
 using Project.Infrastructure.Data.Repositories.Identity_AuthRepositories;
 using Project.Infrastructure.Data.Repositories.System_LogRepositories;
+using Project.Infrastructure.ExternalServices.CacheServices;
 using Project.Infrastructure.ExternalServices.MailServices;
 using Project.Infrastructure.ExternalServices.StorageServices;
 using Project.Infrastructure.ExternalServices.TokenServices;
@@ -41,6 +43,7 @@ namespace Project.API.Extensions
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<ICacheService, CacheService>();
 
             services.AddScoped<IBackgroundJobService, HangfireJobService>();
 
