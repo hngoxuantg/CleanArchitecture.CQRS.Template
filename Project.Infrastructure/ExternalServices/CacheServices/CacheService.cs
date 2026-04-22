@@ -51,7 +51,7 @@ namespace Project.Infrastructure.ExternalServices.CacheServices
 
         public bool Exists(string key)
         {
-            var exists = _cache.TryGetValue(key, out _);
+            bool exists = _cache.TryGetValue(key, out _);
 
             return exists;
         }
