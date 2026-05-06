@@ -43,20 +43,20 @@ namespace Project.Infrastructure.Data.DataSeedingServices
                 Role? role = await _roleManager.FindByNameAsync("Admin");
                 User user = new User
                 {
-                    FullName = _adminAccount.Account.FullName,
-                    UserName = _adminAccount.Account.UserName,
-                    Email = _adminAccount.Account.Email,
-                    PhoneNumber = _adminAccount.Account.PhoneNumber,
+                    FullName = _adminAccount.Account!.FullName!,
+                    UserName = _adminAccount.Account!.UserName!,
+                    Email = _adminAccount.Account!.Email!,
+                    PhoneNumber = _adminAccount.Account!.PhoneNumber!,
 
                     LockoutEnabled = true
                 };
 
-                IdentityResult result = await _userManager.CreateAsync(user, _adminAccount.Account.Password);
+                IdentityResult result = await _userManager.CreateAsync(user, _adminAccount.Account!.Password!);
 
                 if (!result.Succeeded)
                     throw new Exception($"Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
 
-                await _userManager.AddToRoleAsync(user, role.Name);
+                await _userManager.AddToRoleAsync(user, role!.Name!);
 
                 string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
