@@ -17,10 +17,6 @@ namespace Project.Domain.Entities.Business
             Description = description;
         }
 
-        public Category()
-        {
-        }
-
         public Category(string name, string? description = null)
         {
             Name = name;

@@ -18,10 +18,6 @@ namespace Project.Domain.Entities.Business
         private readonly List<ProductImage> _productImages = new List<ProductImage>();
         public IReadOnlyCollection<ProductImage> ProductImages => _productImages.AsReadOnly();
 
-        public Product()
-        {
-        }
-
         public Product(
             string name,
             decimal price,
@@ -38,10 +34,7 @@ namespace Project.Domain.Entities.Business
         {
             foreach (var imageUrl in imageUrls)
             {
-                ProductImage productImage = new ProductImage()
-                {
-                    ImageUrl = imageUrl
-                };
+                ProductImage productImage = new ProductImage(imageUrl);
 
                 _productImages.Add(productImage);
             }
@@ -49,10 +42,8 @@ namespace Project.Domain.Entities.Business
 
         public void AddImage(string imageUrl)
         {
-            ProductImage productImage = new ProductImage()
-            {
-                ImageUrl = imageUrl
-            };
+            ProductImage productImage = new ProductImage(imageUrl);
+
             _productImages.Add(productImage);
         }
     }

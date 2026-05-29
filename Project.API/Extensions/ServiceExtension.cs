@@ -9,6 +9,8 @@ using Project.Application.Features.Auth.Shared.Interfaces;
 using Project.Application.Features.Auth.Shared.Services;
 using Project.Application.Features.Categories.Shared.Interfaces;
 using Project.Application.Features.Categories.Shared.Services;
+using Project.Application.Features.Products.Shared.Interfaces;
+using Project.Application.Features.Products.Shared.Services;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using Project.Domain.Interfaces.IRepositories.IBusinessRepositories;
 using Project.Domain.Interfaces.IRepositories.IIdentity_AuthRepositories;
@@ -51,6 +53,8 @@ namespace Project.API.Extensions
 
             services.AddScoped<ICategoryReadService, CategoryReadService>();
             services.AddScoped<ICategoryWriteService, CategoryWriteService>();
+            services.AddScoped<IProductReadService, ProductReadService>();
+            services.AddScoped<IProductWriteService, ProductWriteService>();
 
             return services;
         }

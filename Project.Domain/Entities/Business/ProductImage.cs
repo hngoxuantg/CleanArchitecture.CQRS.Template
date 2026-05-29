@@ -10,13 +10,9 @@ namespace Project.Domain.Entities.Business
 
         public Product Product { get; set; }
 
-        public ProductImage()
-        {
-        }
-        public ProductImage(string imageUrl, int productId)
+        public ProductImage(string imageUrl)
         {
             ImageUrl = imageUrl;
-            ProductId = productId;
         }
     }
 }
