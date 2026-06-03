@@ -2,7 +2,7 @@ using MediatR;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Features.Products.Shared.Interfaces;
 
-namespace Project.Application.Features.Products.Commands
+namespace Project.Application.Features.Products.Commands.UpdateProduct
 {
     public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, ProductDto>
     {

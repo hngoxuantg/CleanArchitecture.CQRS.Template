@@ -1,6 +1,6 @@
-﻿namespace Project.Application.Features.Categories.Request
+namespace Project.Application.Features.Categories.Requests
 {
-    public class CreateCategoryRequest
+    public class UpdateCategoryRequest
     {
         public string Name { get; set; }
 

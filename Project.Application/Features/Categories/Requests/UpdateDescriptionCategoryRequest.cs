@@ -1,4 +1,4 @@
-﻿namespace Project.Application.Features.Categories.Request
+﻿namespace Project.Application.Features.Categories.Requests
 {
     public class UpdateDescriptionCategoryRequest
     {

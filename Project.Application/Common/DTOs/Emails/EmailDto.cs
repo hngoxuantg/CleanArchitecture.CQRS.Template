@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Project.Application.Common.DTOs.Mails
+namespace Project.Application.Common.DTOs.Emails
 {
     public class EmailDto
     {

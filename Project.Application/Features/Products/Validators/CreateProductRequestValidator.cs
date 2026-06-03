@@ -1,5 +1,5 @@
 using FluentValidation;
-using Project.Application.Features.Products.Request;
+using Project.Application.Features.Products.Requests;
 
 namespace Project.Application.Features.Products.Validators
 {

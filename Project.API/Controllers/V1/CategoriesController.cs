@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Common.Interfaces.IExternalServices.ICacheServices;
-using Project.Application.Features.Categories.Commands;
+using Project.Application.Features.Categories.Commands.CreateCategory;
+using Project.Application.Features.Categories.Commands.DeleteCategory;
+using Project.Application.Features.Categories.Commands.UpdateCategory;
 using Project.Application.Features.Categories.Commands.UpdateDescriptionCategory;
 using Project.Application.Features.Categories.Queries.GetById;
-using Project.Application.Features.Categories.Request;
+using Project.Application.Features.Categories.Requests;
 using Project.Common.Constants;
 using Project.Common.Models.Responses;
 

@@ -6,7 +6,7 @@ using NSubstitute;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
 using Project.Application.Common.Mappers;
-using Project.Application.Features.Products.Request;
+using Project.Application.Features.Products.Requests;
 using Project.Application.Features.Products.Shared.Interfaces;
 using Project.Application.Features.Products.Shared.Services;
 using Project.Domain.Entities.Business;

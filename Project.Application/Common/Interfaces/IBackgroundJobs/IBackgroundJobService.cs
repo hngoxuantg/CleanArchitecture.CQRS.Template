@@ -1,4 +1,4 @@
-﻿using Project.Application.Common.DTOs.Mails;
+﻿using Project.Application.Common.DTOs.Emails;
 
 namespace Project.Application.Common.Interfaces.IBackgroundJobs
 {

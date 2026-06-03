@@ -2,7 +2,7 @@
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Features.Categories.Shared.Interfaces;
 
-namespace Project.Application.Features.Categories.Commands
+namespace Project.Application.Features.Categories.Commands.CreateCategory
 {
     public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryDto>
     {

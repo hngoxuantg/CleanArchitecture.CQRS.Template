@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Project.Application.Common.DTOs.Categories;
-using Project.Application.Common.DTOs.Mails;
+using Project.Application.Common.DTOs.Emails;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IBackgroundJobs;
 using Project.Application.Common.Interfaces.IServices;
-using Project.Application.Features.Categories.Request;
+using Project.Application.Features.Categories.Requests;
 using Project.Application.Features.Categories.Shared.Interfaces;
 using Project.Domain.Entities.Business;
 using Project.Domain.Entities.Identity_Auth;

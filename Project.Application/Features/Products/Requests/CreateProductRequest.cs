@@ -1,6 +1,6 @@
-namespace Project.Application.Features.Products.Request
+namespace Project.Application.Features.Products.Requests
 {
-    public class UpdateProductRequest
+    public class CreateProductRequest
     {
         public string Name { get; set; }
 

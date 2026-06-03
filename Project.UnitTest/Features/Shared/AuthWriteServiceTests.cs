@@ -15,7 +15,7 @@ using Project.Domain.Entities.Identity_Auth;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 using System.Linq.Expressions;
 
-namespace Project.UnitTest.Features.Auth
+namespace Project.UnitTest.Features.Shared
 {
     public class AuthWriteServiceTests
     {

@@ -1,7 +1,7 @@
 using MediatR;
 using Project.Application.Features.Categories.Shared.Interfaces;
 
-namespace Project.Application.Features.Categories.Commands
+namespace Project.Application.Features.Categories.Commands.DeleteCategory
 {
     public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, bool>
     {

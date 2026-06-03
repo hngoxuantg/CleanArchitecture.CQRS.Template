@@ -1,5 +1,5 @@
 ﻿using Hangfire;
-using Project.Application.Common.DTOs.Mails;
+using Project.Application.Common.DTOs.Emails;
 using Project.Application.Common.Interfaces.IBackgroundJobs;
 using Project.Application.Common.Interfaces.IExternalServices.IMailServices;
 

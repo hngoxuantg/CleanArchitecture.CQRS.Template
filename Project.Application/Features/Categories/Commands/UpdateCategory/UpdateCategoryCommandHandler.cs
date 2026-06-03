@@ -2,7 +2,7 @@ using MediatR;
 using Project.Application.Common.DTOs.Categories;
 using Project.Application.Features.Categories.Shared.Interfaces;
 
-namespace Project.Application.Features.Categories.Commands
+namespace Project.Application.Features.Categories.Commands.UpdateCategory
 {
     public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, CategoryDto>
     {

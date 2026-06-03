@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
-using Project.Application.Features.Products.Request;
+using Project.Application.Features.Products.Requests;
 using Project.Application.Features.Products.Shared.Interfaces;
 using Project.Domain.Entities.Business;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;

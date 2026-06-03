@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Project.Application.Common.DTOs.Categories;
-using Project.Application.Features.Categories.Request;
+using Project.Application.Features.Categories.Requests;
 using Project.Domain.Entities.Business;
 
 namespace Project.Application.Common.Mappers

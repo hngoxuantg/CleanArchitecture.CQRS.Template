@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Interfaces.IExternalServices.ICacheServices;
-using Project.Application.Features.Products.Commands;
+using Project.Application.Features.Products.Commands.CreateProduct;
+using Project.Application.Features.Products.Commands.DeleteProduct;
+using Project.Application.Features.Products.Commands.UpdateProduct;
+using Project.Application.Features.Products.Commands.UploadImages;
 using Project.Application.Features.Products.Queries.GetById;
-using Project.Application.Features.Products.Request;
+using Project.Application.Features.Products.Requests;
 using Project.Common.Constants;
 using Project.Common.Models.Responses;
 

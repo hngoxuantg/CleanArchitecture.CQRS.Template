@@ -1,5 +1,5 @@
 ﻿using Project.Application.Common.DTOs.Categories;
-using Project.Application.Features.Categories.Request;
+using Project.Application.Features.Categories.Requests;
 
 namespace Project.Application.Features.Categories.Shared.Interfaces
 {
