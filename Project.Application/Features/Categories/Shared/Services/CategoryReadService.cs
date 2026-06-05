@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Project.Application.Common.DTOs.Categories;
+﻿using Project.Application.Common.DTOs.Categories;
 using Project.Application.Common.Exceptions;
 using Project.Application.Features.Categories.Shared.Interfaces;
 using Project.Domain.Entities.Business;

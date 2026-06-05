@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
@@ -74,7 +73,7 @@ namespace Project.Application.Features.Products.Shared.Services
                 .Where(p => p.Id == id && !p.IsDeleted)
                 .Include(p => p.ProductImages);
 
-            return await _unitOfWork.ProductRepository.GetOneUntrackedAsync<Product>(
+            return await _unitOfWork.ProductRepository.GetOneUntrackedAsync(
                 query: query,
                 ct: cancellationToken)
                 ?? throw new NotFoundException($"Product with ID {id} not found.");

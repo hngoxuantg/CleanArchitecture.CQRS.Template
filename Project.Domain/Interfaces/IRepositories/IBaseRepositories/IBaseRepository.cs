@@ -1,9 +1,10 @@
-﻿using System.Linq.Expressions;
+﻿using Project.Domain.Entities.Base;
+using System.Linq.Expressions;
 
 namespace Project.Domain.Interfaces.IRepositories.IBaseRepositories
 {
     public interface IBaseRepository<T>
-        where T : class
+        where T : class, IAggregateRoot
     {
         Task<IEnumerable<T>> GetAllAsync(
             RepositoryQuery<T>? query = null,

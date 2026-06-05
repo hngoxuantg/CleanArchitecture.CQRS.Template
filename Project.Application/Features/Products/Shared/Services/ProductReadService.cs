@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
