@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
@@ -69,13 +70,10 @@ namespace Project.Application.Features.Products.Shared.Services
 
         private async Task<Product> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            RepositoryQuery<Product> query = RepositoryQuery<Product>.For()
-                .Where(p => p.Id == id && !p.IsDeleted)
-                .Include(p => p.ProductImages);
-
-            return await _unitOfWork.ProductRepository.GetOneUntrackedAsync(
-                query: query,
-                ct: cancellationToken)
+            return await _unitOfWork.ProductRepository.GetOneUntrackedAsync<Product>(
+                filter: p => p.Id == id && !p.IsDeleted,
+                include: p => p.Include(p => p.ProductImages),
+                cancellation: cancellationToken)
                 ?? throw new NotFoundException($"Product with ID {id} not found.");
         }
 
@@ -86,7 +84,7 @@ namespace Project.Application.Features.Products.Shared.Services
 
             Product product = await GetProductByIdAsync(productId, cancellationToken);
 
-            List<string> relativePaths = await _fileService.SaveImagesAsync(formFiles, $"products/{productId}", cancellationToken);
+            var relativePaths = await _fileService.SaveImagesAsync(formFiles, $"products/{productId}", cancellationToken);
 
             product.AddImages(relativePaths.ToList());
 

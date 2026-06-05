@@ -168,12 +168,9 @@ namespace Project.Application.Features.Auth.Shared.Services
 
         private async Task<RefreshToken> GetRefreshTokenAsync(string? refreshToken, CancellationToken cancellationToken = default)
         {
-            RepositoryQuery<RefreshToken> query = RepositoryQuery<RefreshToken>.For()
-                .Where(r => r.Token == refreshToken);
-
-            return await _unitOfWork.RefreshTokenRepository.GetOneAsync(
-                query: query,
-                ct: cancellationToken) ?? throw new NotFoundException("Refresh token not found");
+            return await _unitOfWork.RefreshTokenRepository.GetOneAsync<RefreshToken>(
+                filter: r => r.Token == refreshToken,
+                cancellation: cancellationToken) ?? throw new NotFoundException("Refresh token not found");
         }
     }
 }
