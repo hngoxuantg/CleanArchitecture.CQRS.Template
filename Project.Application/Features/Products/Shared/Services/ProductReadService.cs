@@ -3,6 +3,7 @@ using Project.Application.Common.DTOs.Products;
 using Project.Application.Common.Exceptions;
 using Project.Application.Common.Interfaces.IExternalServices.IStorageServices;
 using Project.Application.Features.Products.Shared.Interfaces;
+using Project.Domain.Entities.Business;
 using Project.Domain.Interfaces.IRepositories.IBaseRepositories;
 
 namespace Project.Application.Features.Products.Shared.Services
@@ -20,8 +21,11 @@ namespace Project.Application.Features.Products.Shared.Services
 
         public async Task<ProductDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
+            RepositoryQuery<Product> query = RepositoryQuery<Product>.For()
+                .Where(p => p.Id == id && !p.IsDeleted);
+
             return await _unitOfWork.ProductRepository.GetOneUntrackedAsync(
-                filter: p => p.Id == id && !p.IsDeleted,
+                query: query,
                 selector: p => new ProductDto
                 {
                     Id = p.Id,
@@ -31,7 +35,7 @@ namespace Project.Application.Features.Products.Shared.Services
                     CategoryId = p.CategoryId,
                     ImageUrls = _fileService.GetAbsoluteUrls(p.ProductImages.Select(pi => pi.ImageUrl)).ToList()
                 },
-                include: q => q.Include(p => p.ProductImages)) ?? throw new NotFoundException($"Product with id {id} not found.");
+                ct: cancellationToken) ?? throw new NotFoundException($"Product with id {id} not found.");
         }
     }
 }

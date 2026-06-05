@@ -70,10 +70,13 @@ namespace Project.Application.Features.Products.Shared.Services
 
         private async Task<Product> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
         {
+            RepositoryQuery<Product> query = RepositoryQuery<Product>.For()
+                .Where(p => p.Id == id && !p.IsDeleted)
+                .Include(p => p.ProductImages);
+
             return await _unitOfWork.ProductRepository.GetOneUntrackedAsync<Product>(
-                filter: p => p.Id == id && !p.IsDeleted,
-                include: p => p.Include(p => p.ProductImages),
-                cancellation: cancellationToken)
+                query: query,
+                ct: cancellationToken)
                 ?? throw new NotFoundException($"Product with ID {id} not found.");
         }
 
@@ -84,7 +87,7 @@ namespace Project.Application.Features.Products.Shared.Services
 
             Product product = await GetProductByIdAsync(productId, cancellationToken);
 
-            var relativePaths = await _fileService.SaveImagesAsync(formFiles, $"products/{productId}", cancellationToken);
+            List<string> relativePaths = await _fileService.SaveImagesAsync(formFiles, $"products/{productId}", cancellationToken);
 
             product.AddImages(relativePaths.ToList());
 
