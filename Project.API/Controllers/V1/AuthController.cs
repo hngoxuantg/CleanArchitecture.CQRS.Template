@@ -42,7 +42,8 @@ namespace Project.API.Controllers.V1
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(_appSettings.JwtConfig.RefreshTokenExpirationDays)
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(_appSettings.JwtConfig!.RefreshTokenExpirationDays)
             });
 
             return Ok(new AuthResult
@@ -66,9 +67,15 @@ namespace Project.API.Controllers.V1
                 });
             }
 
-            await _sender.Send(new LogoutCommand(Request.Cookies["refreshToken"]), cancellationToken);
+            await _sender.Send(new LogoutCommand(Request.Cookies["refreshToken"]!), cancellationToken);
 
-            Response.Cookies.Delete("refreshToken");
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/"
+            });
 
             return Ok(new ApiResponse
             {
@@ -100,7 +107,8 @@ namespace Project.API.Controllers.V1
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(7)
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(_appSettings.JwtConfig!.RefreshTokenExpirationDays)
             });
 
             return Ok(new AuthResult
@@ -110,5 +118,16 @@ namespace Project.API.Controllers.V1
                 AccessToken = result.AccessToken,
             });
         }
+
+        private CookieOptions RefreshTokenCookieOptions =>
+            new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(
+            _appSettings.JwtConfig!.RefreshTokenExpirationDays)
+            };
     }
 }
