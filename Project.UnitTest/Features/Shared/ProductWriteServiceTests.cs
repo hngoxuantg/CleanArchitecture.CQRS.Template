@@ -87,7 +87,7 @@ namespace Project.UnitTest.Features.Shared
             var relativePaths = new List<string> { $"/uploads/products/{productId}/img1.jpg" };
             var absoluteUrls = new List<string> { $"http://localhost/uploads/products/{productId}/img1.jpg" };
 
-            _fileService.SaveImagesAsync(Arg.Any<IList<IFormFile>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            _fileService.SaveFilesAsync(Arg.Any<IList<IFormFile>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(relativePaths);
 
             _fileService.GetAbsoluteUrls(Arg.Is<IEnumerable<string>>(r => r.SequenceEqual(relativePaths)))

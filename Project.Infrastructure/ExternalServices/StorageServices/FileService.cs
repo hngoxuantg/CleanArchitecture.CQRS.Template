@@ -21,12 +21,12 @@ namespace Project.Infrastructure.ExternalServices.StorageServices
             Directory.CreateDirectory(_baseDirectory);
         }
 
-        public async Task<string> SaveImageAsync(
+        public async Task<string> SaveFileAsync(
             IFormFile formFile,
             string folder,
             CancellationToken cancellationToken = default)
         {
-            if (!IsValidImage(formFile))
+            if (!IsValidFile(formFile))
                 throw new ValidatorException("File is invalid or empty.");
 
             string folderPath = Path.Combine(_baseDirectory, folder);
@@ -43,7 +43,7 @@ namespace Project.Infrastructure.ExternalServices.StorageServices
             return Path.Combine("/uploads", folder, fileName).Replace("\\", "/");
         }
 
-        public async Task<List<string>> SaveImagesAsync(
+        public async Task<List<string>> SaveFilesAsync(
             IList<IFormFile> formFiles,
             string folder,
             CancellationToken cancellationToken = default)
@@ -52,16 +52,16 @@ namespace Project.Infrastructure.ExternalServices.StorageServices
 
             for (int i = 0; i < formFiles.Count; i++)
             {
-                if (IsValidImage(formFiles[i]))
+                if (IsValidFile(formFiles[i]))
                 {
-                    filePaths.Add(await SaveImageAsync(formFiles[i], folder, cancellationToken));
+                    filePaths.Add(await SaveFileAsync(formFiles[i], folder, cancellationToken));
                 }
             }
 
             return filePaths;
         }
 
-        public bool IsValidImage(IFormFile formFile)
+        public bool IsValidFile(IFormFile formFile)
         {
             if (formFile == null || formFile.Length == 0)
                 return false;

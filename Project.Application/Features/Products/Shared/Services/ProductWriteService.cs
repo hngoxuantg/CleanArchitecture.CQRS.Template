@@ -84,7 +84,7 @@ namespace Project.Application.Features.Products.Shared.Services
 
             Product product = await GetProductByIdAsync(productId, cancellationToken);
 
-            var relativePaths = await _fileService.SaveImagesAsync(formFiles, $"products/{productId}", cancellationToken);
+            var relativePaths = await _fileService.SaveFilesAsync(formFiles, $"products/{productId}", cancellationToken);
 
             product.AddImages(relativePaths.ToList());
 
