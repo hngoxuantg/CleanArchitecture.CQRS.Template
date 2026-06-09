@@ -103,7 +103,15 @@ namespace Project.Infrastructure.ExternalServices.StorageServices
 
         public bool FileExists(string filePath)
         {
-            return File.Exists(Path.Combine(_baseDirectory, filePath).Replace("/", "\\"));
+            string relativePath = filePath.TrimStart('/', '\\');
+
+            if (relativePath.StartsWith("uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = relativePath.Substring("uploads".Length).TrimStart('/', '\\');
+            }
+
+            string fullPath = Path.Combine(_baseDirectory, relativePath);
+            return File.Exists(fullPath);
         }
 
         public bool DeleteFiles(IList<string> filePaths)
