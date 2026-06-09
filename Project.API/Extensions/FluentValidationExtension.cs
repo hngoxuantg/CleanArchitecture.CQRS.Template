@@ -11,18 +11,20 @@ namespace Project.API.Extensions
                 {
                     options.InvalidModelStateResponseFactory = (ActionContext context) =>
                     {
-                        Dictionary<string, string[]> errors = context.ModelState
+                        IEnumerable<object> errors = context.ModelState
                             .Where(e => e.Value?.Errors.Count > 0)
-                            .ToDictionary(
-                                kvp => char.ToLowerInvariant(kvp.Key[0]) + kvp.Key.Substring(1),
-                                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-                            );
+                            .SelectMany(kvp => kvp.Value!.Errors.Select(e => new
+                            {
+                                field = char.ToLowerInvariant(kvp.Key[0]) + kvp.Key.Substring(1),
+                                message = e.ErrorMessage
+                            }))
+                            .ToList();
 
                         var response = new
                         {
                             success = false,
                             message = "One or more validation errors occurred.",
-                            errors,
+                            errors = errors,
                             error = new
                             {
                                 code = "VALIDATION_ERROR",
